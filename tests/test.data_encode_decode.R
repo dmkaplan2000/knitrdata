@@ -1,0 +1,25 @@
+library(knitrdata)
+
+x = data.frame(a=1:5,b=letters[1:5])
+write.csv(x,"test.csv")
+saveRDS(x,"test.RDS")
+
+enccsv = data_encode("test.csv","base64")
+encrds = data_encode("test.RDS","base64")
+
+csv = data_decode(enccsv,"base64",as_text=TRUE)
+cat(csv)
+
+rds = data_decode(encrds,"base64",as_text=FALSE)
+writeBin(rds,"test_output.RDS")
+y = readRDS("test_output.RDS")
+y
+
+if (require(gpg)) {
+  k = gpg_keygen("test","test@test.org")
+  encgpg = data_encode("test.csv","gpg",options = list(receiver=k))
+
+  cat(data_decode(encgpg,"gpg",as_text=TRUE))
+
+  gpg_delete(k,secret=TRUE)
+}
