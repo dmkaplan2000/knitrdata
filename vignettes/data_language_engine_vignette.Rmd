@@ -439,3 +439,8 @@ cat(ext)
 
 Though the `knitrdata` package can be a powerful tool, it can also be easily abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. To avoid this, it is recommended that data files exceeding ~1 MB not be included in Rmarkdown documents, though there is no formal limit on the size of data chunks.
 
+```{r remove_temp_files,include=FALSE,message=FALSE}
+file.remove("test_external.txt","test.RDS.base64","test_output2.RDS",
+            "key","test_output.RDS","test.RDS","test.csv")
+```
+
