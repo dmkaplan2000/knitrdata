@@ -7,10 +7,11 @@ Authors@R: c(
   )
 Description: Implements a data language engine for incorporating data directly in Rmarkdown
     documents so that they can be made completely standalone.
-License: GPL-3
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/dmkaplan2000/knitrdata
 Imports: knitr, base64enc
-Suggests: gpg, Rmarkdown
+Suggests: gpg, rmarkdown
 RoxygenNote: 7.0.2
+VignetteBuilder: knitr

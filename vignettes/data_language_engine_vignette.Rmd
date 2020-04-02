@@ -1,0 +1,439 @@
+---
+title: "Building standalone Rmarkdown documents using the data language engine"
+author: "David M. Kaplan"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Standalone Rmarkdown documents with the data language engine}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(knitrdata) # load package
+```
+
+This document provides a brief introduction to how to use the `knitrdata` package to create standalone Rmarkdown documents. For examples of Rmarkdown documents using the package, please consult the `examples` directory provided with the package. 
+
+## Conceptual overview
+
+Sometimes it would be useful to make completely standalone Rmarkdown documents that do not depend on data in external files. One important example of this is scientific publications written in Rmarkdown for which we often would like to supply the source document with data to ensure results are reproducible.
+
+This package provides for a new `data` language engine to facilitate the creation of standalone Rmarkdown documents. Instead of putting code inside `data` chunks, one puts the contents of the data file that one wishes to use in your Rmarkdown document. 
+
+For text files (e.g., CSV data tables), the chunk will typically just include the contents of the file itself. For binary data files (e.g., RDS files, images, NetCDF files), the data must be first encoded as text before including it in a `data` chunk. Two encoding formats are currently implemented: `base64`, used for non-sensitive data; and `gpg`, allowing one to encrypt data so that only users with the decryption key have access to the data. The latter option requires that a GPG keyring be installed and properly configured.
+
+`data` chunks do not typically produce output as most code chunks do. Instead, the decoded contents of the chunk are either returned as a variable in the R workspace or saved to an external file that can then be loaded for use in the document.
+
+## Encoding data
+
+Both text and binary data files can be encoded, but this is required for binary data so that it can be incorporated in a (text) Rmarkdown document. Two encoding formats are currently implemented: `base64`, used for non-sensitive data; and `gpg`, allowing one to encrypt data so that only users with the decryption key have access to the data. The latter option requires that a GPG keyring be installed and properly configured.
+
+Two helper functions, `data_encode` and `data_decode` are included in the package to facilitate encoding and decoding of data files. These are basically wrapper functions for functionality provided by the [base64enc](https://cran.r-project.org/package=base64enc) and [gpg](https://cran.r-project.org/package=gpg) packages.
+
+In the examples below, we will use the following simple data frame that exists in both text and binary formats:
+
+```{r}
+D = data.frame(a=1:3,b=letters[1:3])
+D
+write.csv(D,"test.csv", row.names = FALSE, quote = FALSE)
+saveRDS(D,"test.RDS")
+```
+
+For text format chunks, the contents of file itself are included directly in the data chunk:
+
+```{r}
+cat(readLines("test.csv"),sep="\n")
+```
+
+### Base64
+
+Base64 encoding is the standard encoding to be used for all non-sensitive binary data. Encoding works as follows:
+
+```{r}
+b64 = data_encode("test.RDS","base64")
+```
+
+By default this function will silently return the encoded data as a character string and `cat` the contents of that character string to the command line so that it can be copied and pasted directly into a `data` chunk. This is only practical for relatively small data files, so for larger files, one can place the output in a file:
+
+```{r}
+data_encode("test.RDS","base64",output="test.RDS.base64")
+cat(readLines("test.RDS.base64"),sep="\n")
+```
+
+Data can be decoded as follows:
+
+```{r}
+rds = data_decode(b64,"base64",as_text=FALSE)
+writeBin(rds,"test_output.RDS")
+y = readRDS("test_output.RDS")
+y
+```
+
+### GPG
+
+GPG encoding requires a properly configured GPG keyring. Numerous websites explain how to do this, included the main [gpg](https://gnupg.org/) website.
+
+For the purposes of this vignette, I will generate a test GPG private-public key pair using the [gpg](https://cran.r-project.org/package=gpg) package, however in real use scenarios proper keys would need to be generated using the `gpg` command line tool.
+
+```{r eval=requireNamespace("gpg")}
+id = gpg::gpg_keygen("test","test@test.org")
+```
+
+Next one uses this key to encode a data file:
+
+```{r eval=requireNamespace("gpg")}
+enc = data_encode("test.csv","gpg",options = list(receiver=id))
+```
+
+Note that the receiver ID must be supplied in the `options` list input argument.
+
+Decoding works as follows:
+
+```{r eval=requireNamespace("gpg")}
+t = data_decode(enc,"gpg",as_text=TRUE)
+cat(t)
+```
+
+Note that there is no need to supply the receiver ID when decoding because the appopriate private key is in the keyring. The `as_text` input argument would be set to `FALSE` if the contents were a binary file.
+
+We can delete the text key from our keyring as follows:
+
+```{r eval=requireNamespace("gpg")}
+gpg::gpg_delete(id,secret=TRUE)
+```
+
+## Text data chunks
+
+Textual data can be directly placed into a data chunk as follows:
+
+    `r ''````{data output.var="d"}
+    a,b
+    1,a
+    2,b
+    3,c
+    `r ''````
+
+```{data output.var="d",echo=FALSE}
+a,b
+1,a
+2,b
+3,c
+```
+
+This will read the text contents of the chunk into the variable `d`. This can then be converted into a data.frame using `read.csv`:
+
+```{r}
+read.csv(text=d)
+```
+
+## Base64-encoded binary data chunks
+
+Base64 encoded binary data is incorporated into a chunk as follows:
+
+    `r ''````{data output.var="b",format="binary",echo=FALSE}
+    H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
+    kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
+    6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
+    yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
+    OwBVQunahwEAAA==
+    `r ''````
+
+```{data output.var="b",format="binary",include=FALSE}
+H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
+kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
+6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
+yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
+OwBVQunahwEAAA==
+```
+
+This will place the decoded contents of the chunk into a raw vector `b`. Note that `format` must be specified as `'binary'` and that we have chosen `echo=FALSE` to avoid including lots of ugly encoded content in our formatted document.
+
+The contents of the raw vector `b` must be written to a file before they can be read back into the Rmarkdown session:
+
+```{r}
+writeBin(b,"test_output.RDS")
+```
+
+We can skip this writing step by specifying the `output.file` chunk option instead of `output.var`:
+
+    `r ''````{data output.file="test_output.RDS",format="binary",echo=FALSE}
+    H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
+    kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
+    6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
+    yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
+    OwBVQunahwEAAA==
+    `r ''````
+
+Specifying the `output.file` chunk option is generally the most practical way of working with binary data.
+
+Finally, this file can be read back into the Rmarkdown session:
+
+```{r}
+readRDS("test_output.RDS")
+```
+
+## GPG-encoded data chunks
+
+GPG chunks work similar to base64 chunks except that one must specify `encoding='gpg'`. To demonstrate this functionality, we first import into the GPG keyring the private key previously used to encode some data. We would never do this in a real use case, but this is practical for this vignette and it demonstrates another use of `data` chunks.
+
+    `r ''````{data key,output.file="key",include=FALSE}
+    -----BEGIN PGP PRIVATE KEY BLOCK-----
+    
+    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
+    =C6UF
+    -----END PGP PRIVATE KEY BLOCK-----
+    `r ''````
+
+```{data key,output.file="key",include=FALSE,eval=requireNamespace("gpg")}
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+
+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
+=C6UF
+-----END PGP PRIVATE KEY BLOCK-----
+```
+
+This key can then be imported into the keyring:
+
+```{r importkey,eval=requireNamespace("gpg")}
+gpg::gpg_import("key")
+```
+
+Now that we have this private key, we can decode some binary data encrypted using this key:
+
+    `r ''````{data t3,format="binary",encoding="gpg",output.file="test_output2.RDS"}
+    -----BEGIN PGP MESSAGE-----
+    Version: GnuPG v2
+    
+    hQGMA9TPonHna5j3AQv7BIPNOSR/024iE0Gj3DCo3DvLvj/oEJ29XORHBkn4nul1
+    +zaRV5E/K4LCKxkkAEx/+FdM72x1hV5FF5Vf0FSet1RHiOOXPuChEEzRHOubkh/U
+    gw44Q72d8Dp6TOJ+1KT5k/fdkVKsOZRSttL8hvxqC4nyfObF0CkIoG+Kfx+kkYqu
+    araVWqNtcb3/FbtT+ZC0Hip0Ws6IJ8mGOhZdRxZ3S8KUtgf/t7S3Wa75c6L1wolT
+    R1/WhPgcWB4epLTvHdSmv9qcu/vFXE8SmNE5MV4V2aSTRU7y9WdPW/+XzU2Et4BK
+    kGyzhkI6q7QzAXFOeD1sn0uaUeH9/BDwn3AJZEXkwN4qaarPpDKjZ9GVE9Gg8521
+    BYe7AIZwq7sfnF+v1WyxamFYpSSAiNHze00MHPWot3Db+4SpRFYIWlYlZF00HIMo
+    Qspb4AmIfnNo9zj0RGG7GJoyod8ZrW4RF5iOEUWtyQ5z6LzymGTSdArWOq1fDgYW
+    tvEgbkbdYsJA6usJ3Zxc0sBJARfA6gDCFF72nGiAoNS98zoFjtD7hznY9DBvCOoF
+    jzJ8kHfPQPK9/bRVuofUDP+jOoJyf8/7eB6kANNq+XrzoZL0N42zHR2n47xupqYN
+    GSdsRljTra8a9zWIs9k8E5/79qRvV25c/wPeysulWkzhLCDaCMMVYJvQQ0JgT2L+
+    /eBtDeAuqkCqiDjeEGGB0Q4Q81IOIHMxUXFPJHvWJE4eJhnRjLmuPCBDQdL0JYTS
+    Bc48A/eA/cbfUr+4RluY9RLcaUHRPjKT8e7X98VdnSBPGvikVpSjR3zZhPNQs7Vb
+    C7H5lml4B8FpRgQBFwt2ou8URLRYR82tUa/OcsByW9jxf988YZx57a1hAw==
+    =m4sT
+    -----END PGP MESSAGE-----
+    `r ''````
+
+```{data t3,format="binary",encoding="gpg",output.file="test_output2.RDS",include=FALSE,eval=requireNamespace("gpg")}
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v2
+
+hQGMA9TPonHna5j3AQv7BIPNOSR/024iE0Gj3DCo3DvLvj/oEJ29XORHBkn4nul1
++zaRV5E/K4LCKxkkAEx/+FdM72x1hV5FF5Vf0FSet1RHiOOXPuChEEzRHOubkh/U
+gw44Q72d8Dp6TOJ+1KT5k/fdkVKsOZRSttL8hvxqC4nyfObF0CkIoG+Kfx+kkYqu
+araVWqNtcb3/FbtT+ZC0Hip0Ws6IJ8mGOhZdRxZ3S8KUtgf/t7S3Wa75c6L1wolT
+R1/WhPgcWB4epLTvHdSmv9qcu/vFXE8SmNE5MV4V2aSTRU7y9WdPW/+XzU2Et4BK
+kGyzhkI6q7QzAXFOeD1sn0uaUeH9/BDwn3AJZEXkwN4qaarPpDKjZ9GVE9Gg8521
+BYe7AIZwq7sfnF+v1WyxamFYpSSAiNHze00MHPWot3Db+4SpRFYIWlYlZF00HIMo
+Qspb4AmIfnNo9zj0RGG7GJoyod8ZrW4RF5iOEUWtyQ5z6LzymGTSdArWOq1fDgYW
+tvEgbkbdYsJA6usJ3Zxc0sBJARfA6gDCFF72nGiAoNS98zoFjtD7hznY9DBvCOoF
+jzJ8kHfPQPK9/bRVuofUDP+jOoJyf8/7eB6kANNq+XrzoZL0N42zHR2n47xupqYN
+GSdsRljTra8a9zWIs9k8E5/79qRvV25c/wPeysulWkzhLCDaCMMVYJvQQ0JgT2L+
+/eBtDeAuqkCqiDjeEGGB0Q4Q81IOIHMxUXFPJHvWJE4eJhnRjLmuPCBDQdL0JYTS
+Bc48A/eA/cbfUr+4RluY9RLcaUHRPjKT8e7X98VdnSBPGvikVpSjR3zZhPNQs7Vb
+C7H5lml4B8FpRgQBFwt2ou8URLRYR82tUa/OcsByW9jxf988YZx57a1hAw==
+=m4sT
+-----END PGP MESSAGE-----
+```
+
+```{r eval=requireNamespace("gpg")}
+d = readRDS("test_output2.RDS")
+d
+```
+
+```{r deletekey,eval=requireNamespace("gpg"),include=FALSE}
+id = gpg::gpg_list_keys("test@test.org")$id
+gpg::gpg_delete(id,secret=TRUE)
+```
+
+## Reading a data chunk from an external file
+
+One disadvantage of using `data` chunks is that it can make Rmarkdown files long and difficult to navigate if you use lots of data. To facilitate the initial construction of standalone Rmarkdown documents, data chunks can be read from external files using the `external.file` chunk option. The external file must have the text-encoded chunk contents as they would appear in a `data` chunk. The intended use of this option is that large data chunks would be placed initially in external files, but the contents of these files would be placed directly in the `data` chunks before sharing the document with others. 
+
+```{r}
+writeLines(c("This is from an external file.","It has two lines."),
+           "test_external.txt")
+```
+
+    `r ''````{data ext,output.var="ext",external.file="test_external.txt"}
+    Content will be ignored with a warning!
+    `r ''````
+
+```{data ext,output.var="ext",external.file="test_external.txt",include=FALSE}
+Content will be ignored with a warning!
+```
+
+```{r}
+cat(ext)
+```
+
+## When not to use data chunks
+
+Though the `knitrdata` package can be a powerful tool, it can also be easily abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. To avoid this, it is recommended that data files exceeding ~1 MB not be included in Rmarkdown documents, though there is no formal limit on the size of data chunks.
+

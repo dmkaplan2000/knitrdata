@@ -15,11 +15,11 @@ writeBin(rds,"test_output.RDS")
 y = readRDS("test_output.RDS")
 y
 
-if (require(gpg)) {
-  k = gpg_keygen("test","test@test.org")
+if (requireNamespace("gpg")) {
+  k = gpg::gpg_keygen("test","test@test.org")
   encgpg = data_encode("test.csv","gpg",options = list(receiver=k))
 
   cat(data_decode(encgpg,"gpg",as_text=TRUE))
 
-  gpg_delete(k,secret=TRUE)
+  gpg::gpg_delete(k,secret=TRUE)
 }

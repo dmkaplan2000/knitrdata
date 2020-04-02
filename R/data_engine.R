@@ -76,6 +76,9 @@ data_decode = function(data,encoding,as_text=FALSE,options=list()) {
       x
     },
     gpg = {
+      if (!requireNamespace("gpg"))
+        stop("gpg package must be installed and configured for encryption/decryption to work.")
+
       tf = tempfile()
       writeLines(data,tf)
       on.exit(file.remove(tf))
@@ -99,6 +102,9 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
       do.call(base64enc::base64encode,
               c(what=file,options,linewidth=64,newline="\n")),
     gpg = {
+      if (!requireNamespace("gpg"))
+        stop("gpg package must be installed and configured for encryption/decryption to work.")
+
       if (is.null(options$receiver))
         stop("Missing GPG receiver in options list. See ?gpg::gpg_encrypt for details.")
       do.call(gpg::gpg_encrypt,c(data=file,options))
@@ -175,10 +181,14 @@ eng_data = function(options) {
   knitr::engine_output(options,code,output)
 }
 
+# Loader/Unloader functions ----------------------------------------------
 
-#' Activate data language engine for use in Rmarkdown documents
-#'
-#' @export
-add_data_language_engine = function() {
+# Activate data language engine for use in Rmarkdown documents
+.onLoad = function(libname,pkgname) {
   knitr::knit_engines$set(data=eng_data)
+}
+
+# Remove data language engine on package unload
+.onUnload = function(libname,pkgname) {
+  knitr::knit_engines$delete("data")
 }
