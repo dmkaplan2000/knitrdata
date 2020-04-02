@@ -15,7 +15,8 @@ writeBin(rds,"test_output.RDS")
 y = readRDS("test_output.RDS")
 y
 
-if (requireNamespace("gpg")) {
+params = list(run_gpg=FALSE)
+if (requireNamespace("gpg") && params$run_gpg) {
   k = gpg::gpg_keygen("test","test@test.org")
   encgpg = data_encode("test.csv","gpg",options = list(receiver=k))
 

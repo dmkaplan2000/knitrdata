@@ -140,6 +140,10 @@ eng_data = function(options) {
     code = readLines(options$external.file)
   }
 
+  # Do nothing if told not to evaluate
+  if (!options$eval)
+    return(knitr::engine_output(options,code,output))
+
   format = options$format
   if (is.null(format))
     format = 'text'
