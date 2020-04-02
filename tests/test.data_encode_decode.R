@@ -24,3 +24,5 @@ if (requireNamespace("gpg") && params$run_gpg) {
 
   gpg::gpg_delete(k,secret=TRUE)
 }
+
+file.remove("test.csv","test.RDS","test_output.RDS")
