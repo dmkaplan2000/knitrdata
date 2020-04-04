@@ -17,12 +17,6 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-# If package not installed, install it
-if (!requireNamespace("knitrdata")) {
-  if (!requireNamespace("remotes"))
-    install.packages("remotes")
-  remotes::install_github("dmkaplan2000/knitrdata")  
-}
 library(knitrdata) # load package
 ```
 
@@ -167,6 +161,46 @@ This will read the text contents of the chunk into the variable `d`. This can th
 read.csv(text=d)
 ```
 
+One can also load the data directly in the data chunk using the `loader.function` chunk option. This should be a function (or a character string containing the name of a function) whose first input argument will be the name of a file containing the `data` chunk (decoded) contents.
+
+    `r ''````{data output.var="d",loader.function=read.csv}
+    a,b
+    1,a
+    2,b
+    3,c
+    `r ''````
+
+```{data output.var="d",echo=FALSE,loader.function=read.csv}
+a,b
+1,a
+2,b
+3,c
+```
+
+```{r}
+d
+```
+
+Additional input arguments can be passed to `loader.function` using the `loader.ops` chunk option:
+
+    `r ''````{data output.var="d",loader.function=read.csv,loader.ops=list(header=FALSE)}
+    a,b
+    1,a
+    2,b
+    3,c
+    `r ''````
+
+```{data output.var="d",echo=FALSE,loader.function=read.csv,loader.ops=list(header=FALSE)}
+a,b
+1,a
+2,b
+3,c
+```
+
+```{r}
+d
+```
+
 ## Base64-encoded binary data chunks
 
 Base64 encoded binary data is incorporated into a chunk as follows:
@@ -205,13 +239,35 @@ We can skip this writing step by specifying the `output.file` chunk option inste
     OwBVQunahwEAAA==
     `r ''````
 
-Specifying the `output.file` chunk option is generally the most practical way of working with binary data.
-
-Finally, this file can be read back into the Rmarkdown session:
+Then this file can be read back into the Rmarkdown session:
 
 ```{r}
 readRDS("test_output.RDS")
 ```
+
+Finally, we can skip both the writing and reading steps using the `loader.function` chunk option:
+
+
+    `r ''````{data output.var="b",format="binary",echo=FALSE,loader.function=readRDS}
+    H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
+    kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
+    6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
+    yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
+    OwBVQunahwEAAA==
+    `r ''````
+
+```{data output.var="b",format="binary",include=FALSE,loader.function=readRDS}
+H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
+kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
+6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
+yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
+OwBVQunahwEAAA==
+```
+
+```{r}
+b
+```
+
 
 ## GPG-encoded data chunks
 
@@ -393,7 +449,7 @@ gpg::gpg_import("key")
 
 Now that we have this private key, we can decode some binary data encrypted using this key:
 
-    `r ''````{data t3,format="binary",encoding="gpg",output.file="test_output2.RDS"}
+    `r ''````{data t3,format="binary",encoding="gpg",output.var="d",loader.function=readRDS}
     -----BEGIN PGP MESSAGE-----
     Version: GnuPG v2
     
@@ -415,7 +471,7 @@ Now that we have this private key, we can decode some binary data encrypted usin
     -----END PGP MESSAGE-----
     `r ''````
 
-```{data t3,format="binary",encoding="gpg",output.file="test_output2.RDS",include=FALSE,eval=requireNamespace("gpg") && params$run_gpg}
+```{data t3,format="binary",encoding="gpg",output.var="d",loader.function=readRDS,include=FALSE,eval=requireNamespace("gpg") && params$run_gpg}
 -----BEGIN PGP MESSAGE-----
 Version: GnuPG v2
 
@@ -438,7 +494,6 @@ C7H5lml4B8FpRgQBFwt2ou8URLRYR82tUa/OcsByW9jxf988YZx57a1hAw==
 ```
 
 ```{r eval=requireNamespace("gpg") && params$run_gpg}
-d = readRDS("test_output2.RDS")
 d
 ```
 
@@ -472,6 +527,24 @@ cat(ext)
 
 Though the `knitrdata` package can be a powerful tool, it can also be easily abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. To avoid this, it is recommended that data files exceeding ~1 MB not be included in Rmarkdown documents, though there is no formal limit on the size of data chunks.
 
+## Tips & tricks
+
+### Numeric vector data
+
+You can use a data chunk to load numeric vector data as follows:
+
+```{data output.var="v"}
+1.2,3.4,5.6,
+7.8,9.0
+```
+
+```{r}
+v = as.numeric(strsplit(v,"[,\n]+")[[1]])
+v
+```
+
+
+<!-- Cleanup -->
 ```{r remove_temp_files,include=FALSE,message=FALSE}
 file.remove("test_external.txt","test.RDS.base64","test_output2.RDS",
             "key","test_output.RDS","test.RDS","test.csv")

@@ -173,14 +173,37 @@ eng_data = function(options) {
     data = data_decode(code,encoding,as_text=(format=="text"),options=decoding.ops)
   }
 
-  # Assign to output.var and/or write to file output.file
+  output.file = options$output.file
+
+  # Create temp file if using loader function
+  if (is.null(output.file) && !is.null(options$loader.function)) {
+    output.file = tempfile()
+    on.exit(file.remove(output.file))
+  }
+
+  # Save decoded data to file if desired
+  if (!is.null(output.file))
+    switch(format,
+           text = writeLines(data,output.file),
+           binary = writeBin(data,output.file)
+    )
+
+  # Apply loader function to data if desired
+  if (!is.null(options$loader.function)) {
+    loader.ops = options$loader.ops
+    if (is.null(loader.ops))
+      loader.ops = list()
+    if (!is.list(loader.ops))
+      stop("loader.ops should be a list. Got object of class ",
+           class(loader.ops)[1])
+
+    data = do.call(options$loader.function,
+                   c(output.file,loader.ops))
+  }
+
+  # Assign to output.var
   if (!is.null(options$output.var))
     assign(options$output.var, data, envir = knitr::knit_global())
-  if (!is.null(options$output.file))
-    switch(format,
-           text = writeLines(data,options$output.file),
-           binary = writeBin(data,options$output.file)
-    )
 
   knitr::engine_output(options,code,output)
 }
