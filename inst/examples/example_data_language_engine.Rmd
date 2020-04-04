@@ -12,6 +12,10 @@ params:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+# If package not installed, install it
+if (!requireNamespace("knitrdata")) {
+  remotes::install_github("dmkaplan2000/knitrdata")  
+}
 library(knitrdata) # load package
 ```
 

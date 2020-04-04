@@ -17,6 +17,12 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
+# If package not installed, install it
+if (!requireNamespace("knitrdata")) {
+  if (!requireNamespace("remotes"))
+    install.packages("remotes")
+  remotes::install_github("dmkaplan2000/knitrdata")  
+}
 library(knitrdata) # load package
 ```
 
@@ -31,6 +37,33 @@ This package provides for a new `data` language engine to facilitate the creatio
 For text files (e.g., CSV data tables), the chunk will typically just include the contents of the file itself. For binary data files (e.g., RDS files, images, NetCDF files), the data must be first encoded as text before including it in a `data` chunk. Two encoding formats are currently implemented: `base64`, used for non-sensitive data; and `gpg`, allowing one to encrypt data so that only users with the decryption key have access to the data. The latter option requires that a GPG keyring be installed and properly configured.
 
 `data` chunks do not typically produce output as most code chunks do. Instead, the decoded contents of the chunk are either returned as a variable in the R workspace or saved to an external file that can then be loaded for use in the document.
+
+## Installation & getting started
+
+`knitrdata` can be installed from its [github repository](https://github.com/dmkaplan2000/knitrdata) using the package [remotes](https://cran.r-project.org/package=remotes):
+
+```{r eval=FALSE}
+remotes::install_github("dmkaplan2000/knitrdata")
+```
+
+Once the package is installed, you need to load the library in Rmarkdown documents before the first `data` chunk, typically in the `setup` chunk at the start of the document:
+
+```{r eval=FALSE}
+library(knitrdata)
+```
+
+To ensure that your document is as standalone as possible, you can combine these two steps in the `setup` chunk (though this may install packages without asking the user):
+
+```{r eval=FALSE}
+# If package not installed, install it
+if (!requireNamespace("knitrdata")) {
+  if (!requireNamespace("remotes"))
+    install.packages("remotes")
+  remotes::install_github("dmkaplan2000/knitrdata")  
+}
+
+library(knitrdata) # load package
+```
 
 ## Encoding data
 
