@@ -543,6 +543,28 @@ v = as.numeric(strsplit(v,"[,\n]+")[[1]])
 v
 ```
 
+### Conditional text in Rmarkdown using knitrdata
+
+One realitively easy way to create Rmarkdown documents whose text depends on input parameters is using `knitrdata`. For example, one could create an input parameter in the YAML header:
+
+```{r eval=FALSE}
+params:
+  cond: TRUE
+```
+
+And then one could include content in the document based on this parameter as follows:
+
+    `r ''````{data include=FALSE,output.var="cond_text"}
+    # A conditional section
+    
+    Some conditional text.
+    `r ''````
+    
+    `r ''````{r results='asis',echo=FALSE,eval=params$cond}
+    cat(cond_text)
+    `r ''````
+
+This will add **A conditional section** and its contents only if `params$cond=TRUE`. There are other methods to achieve this, including embedding `<!--` and `-->` in inline R statements, but this method is reasonably straightforward with low overhead.
 
 <!-- Cleanup -->
 ```{r remove_temp_files,include=FALSE,message=FALSE}
