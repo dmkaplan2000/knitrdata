@@ -6,7 +6,7 @@ output: pdf_document
 
 # Set run_gpg to TRUE to turn on GPG part of document  
 params:
-  run_gpg: FALSE
+  run_gpg: TRUE
 ---
 
 ```{r setup, include = FALSE}
@@ -111,18 +111,33 @@ gpg::gpg_delete(id,secret=TRUE)
 
 Textual data can be directly placed into a data chunks.
 
-```{data output.var="d"}
+```{data output.var="t"}
 a,b
 1,a
 2,b
 3,c
 ```
 
-Text contents of the chunk will be read into the variable `d`. This can then be converted into a data.frame using `read.csv`:
+Text contents of the chunk will be read into the variable `t`. This can then be converted into a data.frame using `read.csv`:
 
 ```{r}
-read.csv(text=d)
+read.csv(text=t)
 ```
+
+You can also use a loader function:
+
+
+```{data output.var="t",loader.function=read.csv}
+a,b
+1,a
+2,b
+3,c
+```
+
+```{r}
+t
+```
+
 
 ## Base64-encoded binary data chunks
 
@@ -158,6 +173,20 @@ Finally, this file can be read back into the Rmarkdown session:
 
 ```{r}
 readRDS("test_output.RDS")
+```
+
+And here too you can use a loader function:
+
+```{data output.var="b",format="binary",loader.function=readRDS}
+H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
+kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
+6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
+yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
+OwBVQunahwEAAA==
+```
+
+```{r}
+b
 ```
 
 ## GPG-encoded data chunks
@@ -256,7 +285,7 @@ gpg::gpg_import("key")
 
 Now that we have this private key, we can decode some binary data encrypted using this key:
 
-```{data t3,format="binary",encoding="gpg",output.file="test_output2.RDS",eval=requireNamespace("gpg") && params$run_gpg}
+```{data t3,format="binary",encoding="gpg",output.var="d",loader.function=readRDS,eval=requireNamespace("gpg") && params$run_gpg}
 -----BEGIN PGP MESSAGE-----
 Version: GnuPG v2
 
@@ -279,7 +308,6 @@ C7H5lml4B8FpRgQBFwt2ou8URLRYR82tUa/OcsByW9jxf988YZx57a1hAw==
 ```
 
 ```{r eval=requireNamespace("gpg") && params$run_gpg}
-d = readRDS("test_output2.RDS")
 d
 ```
 
