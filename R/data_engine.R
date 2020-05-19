@@ -47,7 +47,7 @@
 #' @param encoding Either \code{'base64'} or \code{'gpg'}
 #' @param as_text A boolean indicating if decoded data should be treated as text
 #'   (\code{TRUE}) or binary (\code{FALSE}). Defaults to \code{FALSE}, meaning binary.
-#' @param output Path where encoded data is to be stored. Option, if \code{NULL} then
+#' @param output Path where encoded data is to be stored. Optional; if \code{NULL} then
 #'   encoded data will not be written to a file.
 #' @param options A list containing extra argument for the encoding/decoding functions.
 #'   See \code{\link[base64enc]{base64encode}} and \code{\link[gpg]{gpg_encrypt}}
@@ -73,7 +73,7 @@ data_decode = function(data,encoding,as_text=FALSE,options=list()) {
       x = base64enc::base64decode(data)
       if (as_text)
         x = rawToChar(x)
-      x
+      return(x)
     },
     gpg = {
       if (!requireNamespace("gpg"))
@@ -82,7 +82,7 @@ data_decode = function(data,encoding,as_text=FALSE,options=list()) {
       tf = tempfile()
       writeLines(data,tf)
       on.exit(file.remove(tf))
-      do.call(gpg::gpg_decrypt,c(data=tf,as_text=as_text,options))
+      return(do.call(gpg::gpg_decrypt,c(data=tf,as_text=as_text,options)))
     },
     stop("Uknown encoding: ",encoding)
   )
@@ -125,11 +125,14 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
 
 eng_data = function(options) {
   output = ''
+  code = options$code
+
+  # Do nothing if told not to evaluate
+  if (!options$eval)
+    return(knitr::engine_output(options,code,output))
 
   if (is.null(options$output.var) && is.null(options$output.file))
     stop("One of output.var or output.file must be supplied in data chunk options.")
-
-  code = options$code
 
   # Option to include external file
   # Useful to keep initial file size small and readable.
@@ -139,10 +142,6 @@ eng_data = function(options) {
 
     code = readLines(options$external.file)
   }
-
-  # Do nothing if told not to evaluate
-  if (!options$eval)
-    return(knitr::engine_output(options,code,output))
 
   format = options$format
   if (is.null(format))
