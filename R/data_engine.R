@@ -204,6 +204,7 @@ eng_data = function(options) {
   # Assign to output.var
   if (!is.null(options$output.var))
     assign(options$output.var, data, envir = knitr::knit_global())
+    #knitr::assign_knit_global(options$output.var,data) # Solution to avoid CRAN filters that needs to be implemented in knitr
 
   knitr::engine_output(options,code,output)
 }

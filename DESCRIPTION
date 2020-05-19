@@ -13,5 +13,5 @@ LazyData: true
 URL: https://github.com/dmkaplan2000/knitrdata
 Imports: knitr, base64enc
 Suggests: gpg, rmarkdown
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 VignetteBuilder: knitr
