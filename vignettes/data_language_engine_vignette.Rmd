@@ -106,9 +106,9 @@ y
 
 ### GPG
 
-GPG encoding requires a properly configured GPG keyring. Numerous websites explain how to do this, included the main [gpg](https://gnupg.org/) website.
+GPG encoding requires a properly configured GPG keyring. Explaining the functioning of GPG and GPG keyrings is beyond the scope of this document, but numerous websites explain how GPG works and how to install a GPG keyring, including the main [gpg](https://gnupg.org/) website.
 
-For the purposes of this vignette, I will generate a test GPG private-public key pair using the [gpg](https://cran.r-project.org/package=gpg) package, however in real use scenarios proper keys would need to be generated using the `gpg` command line tool.
+For the purposes of this vignette, I will generate a test GPG private-public key pair using the [gpg](https://cran.r-project.org/package=gpg) package, however in real use scenarios proper keys would typically be generated using the `gpg` command line tool (or an equivalent alternative) with appropriate options.
 
 ```{r eval=requireNamespace("gpg") && params$run_gpg}
 id = gpg::gpg_keygen("test","test@test.org")
@@ -129,9 +129,9 @@ t = data_decode(enc,"gpg",as_text=TRUE)
 cat(t)
 ```
 
-Note that there is no need to supply the receiver ID when decoding because the appopriate private key is in the keyring. The `as_text` input argument would be set to `FALSE` if the contents were a binary file.
+Note that there is no need to supply the receiver ID when decoding because the appopriate private key is in the keyring. The `as_text` input argument would be set to `FALSE` if the contents were a binary file. Binary data is returned as a `raw` vector.
 
-We can delete the text key from our keyring as follows:
+We can delete the public-private key pair we created for this exercise from our keyring as follows:
 
 ```{r eval=requireNamespace("gpg") && params$run_gpg}
 gpg::gpg_delete(id,secret=TRUE)
@@ -139,7 +139,7 @@ gpg::gpg_delete(id,secret=TRUE)
 
 ## Text data chunks
 
-Textual data can be directly placed into a data chunk as follows:
+Now that we know how to encode data so that it can be incorporated in a `data` chunk, it is time to put data chunks into an Rmarkdown document. The simplest possible `data` chunk is a text data chunk containing plain text. Textual data can be directly placed into a data chunk in an Rmarkdown document as follows:
 
     `r ''````{data output.var="d"}
     a,b
@@ -155,13 +155,13 @@ a,b
 3,c
 ```
 
-This will read the text contents of the chunk into the variable `d`. This can then be converted into a data.frame using `read.csv`:
+When the Rmarkdown document is knitted, this chunk will put the text contents of the chunk into the variable `d`, which will then contain the chunk contents as a character string. In this case, the CSV data can then be converted into a `data.frame` using `read.csv`:
 
 ```{r}
 read.csv(text=d)
 ```
 
-One can also load the data directly in the data chunk using the `loader.function` chunk option. This should be a function (or a character string containing the name of a function) whose first input argument will be the name of a file containing the `data` chunk (decoded) contents.
+One can also load the data directly into a `data.frame` using the `loader.function` chunk option. This should be a function (or a character string containing the name of a function) whose first input argument will be the name of a file containing the (decoded) `data` chunk contents.
 
     `r ''````{data output.var="d",loader.function=read.csv}
     a,b
@@ -181,7 +181,7 @@ a,b
 d
 ```
 
-Additional input arguments can be passed to `loader.function` using the `loader.ops` chunk option:
+Additional input arguments can be passed to `loader.function` by supplying a list as the `loader.ops` chunk option:
 
     `r ''````{data output.var="d",loader.function=read.csv,loader.ops=list(header=FALSE)}
     a,b
@@ -201,9 +201,11 @@ a,b
 d
 ```
 
+Note that in this case the first line of the CSV data has been treated as data because we supplied the `header=FALSE` optional argument.
+
 ## Base64-encoded binary data chunks
 
-Base64 encoded binary data is incorporated into a chunk as follows:
+Base64 encoded binary data is incorporated into a chunk by copying the output of the `data_encode` function into the chunk and supplying the `format="binary"` chunk option:
 
     `r ''````{data output.var="b",format="binary",echo=FALSE}
     H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
@@ -221,7 +223,7 @@ yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
 OwBVQunahwEAAA==
 ```
 
-This will place the decoded contents of the chunk into a raw vector `b`. Note that `format` must be specified as `'binary'` and that we have chosen `echo=FALSE` to avoid including lots of ugly encoded content in our formatted document.
+This will place the decoded contents of the chunk into a raw vector `b`. Note that `format` must be specified as `'binary'` and that we have chosen `echo=FALSE` to avoid including lots of ugly encoded content in our formatted document. By default, when `format="binary"`, it is assumed that `encoding="base64"`.
 
 The contents of the raw vector `b` must be written to a file before they can be read back into the Rmarkdown session:
 
@@ -268,10 +270,9 @@ OwBVQunahwEAAA==
 b
 ```
 
-
 ## GPG-encoded data chunks
 
-GPG chunks work similar to base64 chunks except that one must specify `encoding='gpg'`. To demonstrate this functionality, we first import into the GPG keyring the private key previously used to encode some data. We would never do this in a real use case, but this is practical for this vignette and it demonstrates another use of `data` chunks.
+GPG chunks work similar to base64 chunks except that one must specify `encoding="gpg"`. To demonstrate this functionality, we first import into the GPG keyring the private key previously used to encode some data. We would never include the private key in an Rmarkdown document in a real use case, but this is practical for this vignette and it demonstrates another use of `data` chunks.
 
     `r ''````{data key,output.file="key",include=FALSE}
     -----BEGIN PGP PRIVATE KEY BLOCK-----
@@ -504,7 +505,7 @@ gpg::gpg_delete(id,secret=TRUE)
 
 ## Reading a data chunk from an external file
 
-One disadvantage of using `data` chunks is that it can make Rmarkdown files long and difficult to navigate if you use lots of data. To facilitate the initial construction of standalone Rmarkdown documents, data chunks can be read from external files using the `external.file` chunk option. The external file must have the text-encoded chunk contents as they would appear in a `data` chunk. The intended use of this option is that large data chunks would be placed initially in external files, but the contents of these files would be placed directly in the `data` chunks before sharing the document with others. 
+One disadvantage of using `data` chunks is that it can make Rmarkdown files long and difficult to navigate if you use lots of data. Rstudio can help with this problem by allowing one to hide the contents of a chunk, but large file size can still be a problem. To facilitate the initial construction of standalone Rmarkdown documents, data chunks can be read from external files using the `external.file` chunk option. The external file must contain the text-encoded chunk contents exactly as they would appear in a `data` chunk. The intended use of this option is that large data chunks would be placed initially in external files, but the contents of these files would be placed directly in the `data` chunks before sharing the document with others. 
 
 ```{r}
 writeLines(c("This is from an external file.","It has two lines."),
@@ -523,13 +524,21 @@ Content will be ignored with a warning!
 cat(ext)
 ```
 
+## Use cases
+
+There are many potential scenarios where including data inside Rmarkdown documents can be useful. The most obvious is to render a document fully standalone, perhaps for creating a single document that reproduces an entire publication or report or to make life as simple as possible for collaborators that are not comfortable managing complex Rmarkdown documents requiring multiple files. To do this, one would place not only data inside chunks in the Rmarkdown document, but also ancillary files associated with the document, such as CSS, LaTeX and CSL (bibliography) style files, and BibTeX files. These latter chunks would typically recreate these external files using the `output.file` chunk option.
+
+`knitrdata` also has uses in cases where the objective is not necessarily to render a document fully standalone. One can use it as a convenient way to input small data tables and data vectors (see [Numeric vector data](#vectdata) below) into an Rmarkdown document. For example, the `data` chunk syntax combined with CSV data may be simpler and cleaner than creating a data.frame directly in R code. Furthermore, though markdown allows one to create small tables by hand, it is difficult or impossible to reproduce the sophisticated tables that `knitr::kable` and `kableExtra` are capable of creating, and tables created in markdown may not *float* as other tables do, potentially a problem for producing scientific publications with Rmarkdown. `knitrdata` can be used as a simple way to input these tables into an R data.frame, which can then be used as input to `kable` and other tools. Finally, `data` chunks provide a convenient system for making certain Rmarkdown document text conditional on parameter values or results (see [Conditional text in Rmarkdown using knitrdata](#condtext)).
+
+One `knitrdata` feature that may at first glance seem to be of little value is the possibility to `gpg` encrypt data chunks. Why would one want to encrypt just the data when one can encrypt the entire Rmarkdown document? However, there are many cases where the data themselves are confidential (e.g., economically important data, confidential medical information), but the methods used to analyze and synthesize those data can and should be publicly available. Furthermore, it is increasingly common to share code and documents on public collaboration websites, such as [github](www.github.com) or [slack](www.slack.com), but one may not have sufficient confidence in these websites to give them access to the data themselves.  
+
 ## When not to use data chunks
 
-Though the `knitrdata` package can be a powerful tool, it can also be easily abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. To avoid this, it is recommended that data files exceeding ~1 MB not be included in Rmarkdown documents, though there is no formal limit on the size of data chunks.
+Though the `knitrdata` package can be a powerful tool, it can also be easily abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. The option to collapse `data` chunks in Rstudio and the use of the `external.file` chunk option may reduce the importance of these issues in some cases, but including very large amounts of data in Rmarkdown documents should be avoided.
 
-## Tips & tricks
+## Tips & tricks {#tt}
 
-### Numeric vector data
+### Numeric vector data {#vectdata}
 
 You can use a data chunk to load numeric vector data as follows:
 
@@ -543,7 +552,7 @@ v = as.numeric(strsplit(v,"[,\n]+")[[1]])
 v
 ```
 
-### Conditional text in Rmarkdown using knitrdata
+### Conditional text in Rmarkdown using knitrdata {#condtext}
 
 One realitively easy way to create Rmarkdown documents whose text depends on input parameters is using `knitrdata`. For example, one could create an input parameter in the YAML header:
 
@@ -564,7 +573,26 @@ And then one could include content in the document based on this parameter as fo
     cat(cond_text)
     `r ''````
 
-This will add **A conditional section** and its contents only if `params$cond=TRUE`. There are other methods to achieve this, including embedding `<!--` and `-->` in inline R statements, but this method is reasonably straightforward with low overhead.
+This will add **A conditional section** and its contents only if `params$cond=TRUE`. There are other methods to achieve this, but this method is reasonably straightforward with low overhead.
+
+## Full list of knitrdata chunk options
+
+In addition to the standard `eval` and `echo` chunk options, `knitrdata` supports the following chunk options:
+
+```{data output.var="t",loader.function=read.csv,loader.ops=list(sep="|"),echo=FALSE}
+Chunk option|Description
+`format`|One of `'"text"'` or `'"binary"'`. Defaults to `'"text"'`.
+`encoding`|One of `'"asis"'`, `'"base64"'` or `'"gpg"'`. Defaults to `'"asis"'` for `format='"text"'` and `'"base64"'` for `format='"binary"'`.
+`decoding.ops`|A list with additional options for `data_decode`. Currently only useful for passing the `verify` option to `gpg::gpg_decrypt` for `gpg` chunks.
+`output.var`|A character string with the variable name to which the chunk output will be assigned. At least one of `output.var` or `output.file` must always be supplied.
+`output.file`|A character string with the filename to which the chunk output will be written. At least one of `output.var` or `output.file` must always be supplied.
+`external.file`|A character string with the name of file whose text contents will be used to replace any content supplied in the data chunk.
+`line.sep`|Only used when `encoding='"asis"'`. In this cases, specifies the character string that will be used to join the lines of the data chunk before returning them. Defaults to `'"\n"'`.
+```
+
+```{r echo=FALSE}
+knitr::kable(t,caption="List of all knitrdata chunk options.")
+```
 
 <!-- Cleanup -->
 ```{r remove_temp_files,include=FALSE,message=FALSE}

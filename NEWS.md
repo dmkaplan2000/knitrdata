@@ -1,3 +1,10 @@
+knitrdata 0.2.1
+---------------------------------------------------------------------
+
+- Improving vignette and changing `eval=FALSE` functioning.
+- Changing `newline` chunk option to `line.sep`.
+
+
 knitrdata 0.2.0
 ---------------------------------------------------------------------
 
@@ -6,4 +13,5 @@ knitrdata 0.2.0
 knitrdata 0.1.0
 ---------------------------------------------------------------------
 
-- Initial release to CRAN
+- Initial release
+
