@@ -167,7 +167,7 @@ eng_data = function(options) {
     stop("decoding.ops should be a list. Got object of class ",class(decoding.ops)[1])
 
   if (encoding == "asis") {
-    data = paste(code,collapse=ifelse(is.null(options$newline),"\n",options$newline))
+    data = paste(code,collapse=ifelse(is.null(options$line.sep),"\n",options$line.sep))
   } else {
     data = data_decode(code,encoding,as_text=(format=="text"),options=decoding.ops)
   }
