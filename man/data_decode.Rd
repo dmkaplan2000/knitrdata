@@ -24,7 +24,7 @@ encryption.}
 
 \item{file}{Path to file containing data to be encoded}
 
-\item{output}{Path where encoded data is to be stored. Option, if \code{NULL} then
+\item{output}{Path where encoded data is to be stored. Optional; if \code{NULL} then
 encoded data will not be written to a file.}
 }
 \value{

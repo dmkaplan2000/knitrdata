@@ -583,15 +583,17 @@ In addition to the standard `eval` and `echo` chunk options, `knitrdata` support
 Chunk option|Description
 `format`|One of `'"text"'` or `'"binary"'`. Defaults to `'"text"'`.
 `encoding`|One of `'"asis"'`, `'"base64"'` or `'"gpg"'`. Defaults to `'"asis"'` for `format='"text"'` and `'"base64"'` for `format='"binary"'`.
-`decoding.ops`|A list with additional options for `data_decode`. Currently only useful for passing the `verify` option to `gpg::gpg_decrypt` for `gpg` chunks.
+`decoding.ops`|A list with additional arguments for `data_decode`. Currently only useful for passing the `verify` argument to `gpg::gpg_decrypt` for `gpg` encrypted chunks.
+`external.file`|A character string with the name of a file whose text contents will be used as if they were the contents of the data chunk.
 `output.var`|A character string with the variable name to which the chunk output will be assigned. At least one of `output.var` or `output.file` must always be supplied.
 `output.file`|A character string with the filename to which the chunk output will be written. At least one of `output.var` or `output.file` must always be supplied.
-`external.file`|A character string with the name of file whose text contents will be used to replace any content supplied in the data chunk.
-`line.sep`|Only used when `encoding='"asis"'`. In this cases, specifies the character string that will be used to join the lines of the data chunk before returning them. Defaults to `'"\n"'`.
+`loader.function`|A function that will be passed (as the first argument) the name of a file containing the (potentially decoded) contents of the data chunk.
+`loader.ops`|A list of additional arguments to be passed to `loader.function`.
+`line.sep`|Only used when `encoding='"asis"'`. In this cases, specifies the character string that will be used to join the lines of the data chunk before further processing or returning them. Defaults to `'"\n"'`.
 ```
 
-```{r echo=FALSE}
-knitr::kable(t,caption="List of all knitrdata chunk options.")
+```{r knitrdatachunkops,echo=FALSE}
+knitr::kable(t,caption="Full list of knitrdata chunk options.")
 ```
 
 <!-- Cleanup -->
