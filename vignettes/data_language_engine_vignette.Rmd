@@ -7,7 +7,7 @@ params:
   run_gpg: FALSE
 vignette: >
   %\VignetteIndexEntry{Standalone Rmarkdown documents with the data language engine}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEngine{knitr::rmarkdown_notangle}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -37,7 +37,7 @@ For text files (e.g., CSV data tables), the chunk will typically just include th
 `knitrdata` can be installed from its [github repository](https://github.com/dmkaplan2000/knitrdata) using the package [remotes](https://cran.r-project.org/package=remotes):
 
 ```{r eval=FALSE}
-remotes::install_github("dmkaplan2000/knitrdata")
+remotes::install_github("dmkaplan2000/knitrdata",build_vignettes=TRUE)
 ```
 
 Once the package is installed, you need to load the library in Rmarkdown documents before the first `data` chunk, typically in the `setup` chunk at the start of the document:

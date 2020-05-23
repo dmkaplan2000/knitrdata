@@ -12,7 +12,7 @@ This package can be installed from Github executing the
 following command in R:
 
 ```r
-remotes::install_github("dmkaplan2000/knitrdata")
+remotes::install_github("dmkaplan2000/knitrdata",build_vignettes=TRUE)
 ```
 
 ## Use
