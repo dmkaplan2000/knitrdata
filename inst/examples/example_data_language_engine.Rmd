@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # If package not installed, install it
 if (!requireNamespace("knitrdata")) {
-  remotes::install_github("dmkaplan2000/knitrdata")  
+  remotes::install_github("dmkaplan2000/knitrdata",build_vignettes = TRUE)  
 }
 library(knitrdata) # load package
 ```

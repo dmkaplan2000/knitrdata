@@ -53,7 +53,7 @@ To ensure that your document is as standalone as possible, you can combine these
 if (!requireNamespace("knitrdata")) {
   if (!requireNamespace("remotes"))
     install.packages("remotes")
-  remotes::install_github("dmkaplan2000/knitrdata")  
+  remotes::install_github("dmkaplan2000/knitrdata",build_vignettes = TRUE)  
 }
 
 library(knitrdata) # load package
