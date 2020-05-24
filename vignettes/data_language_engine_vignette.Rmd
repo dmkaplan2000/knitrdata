@@ -579,7 +579,7 @@ This will add **A conditional section** and its contents only if `params$cond=TR
 
 In addition to the standard `eval` and `echo` chunk options, `knitrdata` supports the following chunk options:
 
-```{data output.var="t",loader.function=read.csv,loader.ops=list(sep="|"),echo=FALSE}
+```{data output.var="t",loader.function=read.csv,loader.ops=list(sep="|",check.names=FALSE),echo=FALSE}
 Chunk option|Description
 `format`|One of `'"text"'` or `'"binary"'`. Defaults to `'"text"'`.
 `encoding`|One of `'"asis"'`, `'"base64"'` or `'"gpg"'`. Defaults to `'"asis"'` for `format='"text"'` and `'"base64"'` for `format='"binary"'`.
