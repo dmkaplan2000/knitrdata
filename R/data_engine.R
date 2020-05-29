@@ -18,11 +18,11 @@
 #' details on the encoding and decoding process and setting up a \code{gpg} keyring.
 #'
 #' \code{data_encode} takes the name of a file containing the binary or text data
-#' to be encoded and (silently) returns the encoded data as a character string. If
-#' the \code{output} input argument is \code{NULL}, then the encoded data is
-#' returned on the command line using \code{cat} so that it can be copied and
-#' pasted into an Rmarkdown \code{data} chunk. This is only practical for small data
-#' files. For larger data files, set the \code{output} argument to a path where the
+#' to be encoded and returns the encoded data as a character string.
+#' The encoded data is returned silently to avoid outputing to the screen large
+#' amounts of encoded data. If you want to visualize the encoded data, use the
+#' \code{cat} function.
+#' For larger data files, set the \code{output} argument to a path where the
 #' encoded data will be stored.
 #'
 #' \code{data_encode} takes a character string of encoded data and returns either
@@ -112,9 +112,7 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
     stop("Uknown encoding: ",encoding)
   )
 
-  if(is.null(output)) {
-    cat(data)
-  } else {
+  if(!is.null(output)) {
     writeLines(data,output)
   }
 
@@ -175,7 +173,8 @@ eng_data = function(options) {
   output.file = options$output.file
 
   # Create temp file if using loader function
-  if (is.null(output.file) && !is.null(options$loader.function)) {
+  if (is.null(output.file) &&
+      (!is.null(options$loader.function) || !is.null(options$md5sum))) {
     output.file = tempfile()
     on.exit(file.remove(output.file))
   }
@@ -186,6 +185,10 @@ eng_data = function(options) {
            text = writeLines(data,output.file),
            binary = writeBin(data,output.file)
     )
+
+  # Check md5sum if desired
+  if (!is.null(options$md5sum) && options$md5sum != tools::md5sum(output.file))
+    stop("Given md5sum does not match contents of decoded chunk.")
 
   # Apply loader function to data if desired
   if (!is.null(options$loader.function)) {
