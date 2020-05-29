@@ -42,11 +42,11 @@ uses functionality from the \code{\link[gpg:gpg_encrypt]{gpg}} package. See thos
 details on the encoding and decoding process and setting up a \code{gpg} keyring.
 
 \code{data_encode} takes the name of a file containing the binary or text data
-to be encoded and (silently) returns the encoded data as a character string. If
-the \code{output} input argument is \code{NULL}, then the encoded data is
-returned on the command line using \code{cat} so that it can be copied and
-pasted into an Rmarkdown \code{data} chunk. This is only practical for small data
-files. For larger data files, set the \code{output} argument to a path where the
+to be encoded and returns the encoded data as a character string.
+The encoded data is returned silently to avoid outputing to the screen large
+amounts of encoded data. If you want to visualize the encoded data, use the
+\code{cat} function.
+For larger data files, set the \code{output} argument to a path where the
 encoded data will be stored.
 
 \code{data_encode} takes a character string of encoded data and returns either
