@@ -11,8 +11,7 @@
 #' entire chunk contents as a character string.
 #'
 #' \code{insert_chunk} takes the chunk contents and inserts it at the given line number
-#' in the \code{input.file}. By default, it will overwrite \code{input.file} unless the
-#' \code{output.file} argument is supplied and is different from \code{input.file}.
+#' in the \code{rmd.text} or \code{rmd.file}.
 #'
 #' Note that the additional arguments to \code{create_chunk} (\dots) are not
 #' evaluated, but rather they are placed in the chunk header as they appear in the
@@ -26,15 +25,13 @@
 #' @param chunk_type Character string giving the chunk type. Defaults to \code{"data"}.
 #' @param \dots Additional chunk options. These are not evaluated, but rather included
 #'   in the function call as they are entered in the function call.
-#' @param chunk_options_string Character vector with text of chunk options. If given,
-#'   additional function arguments (\dots) will be ignored with a warning if any exist.
+#' @param chunk_options_string Character vector with additional chunk options that will
+#'   be included in the header after the arguments in \dots.
 #' @param chunk Character string with chunk contents including header and tail.
-#' @param input.file Rmarkdown file where chunk contents are to be inserted.
 #' @param line Line number where chunk to be inserted.
-#' @param output.file Where to write final Rmarkdown document with chunk spliced in.
-#'   Defaults to \code{input.file}.
-#' @param overwrite Whether or not to overwrite the \code{output.file}. Defaults to
-#'   \code{TRUE} if \code{input.file=output.file}, otherwise \code{FALSE}.
+#' @param rmd.text Text of Rmarkdown document where chunk contents are to be inserted.
+#' @param rmd.file Filename of Rmarkdown document where chunk contents are to be inserted.
+#'   Ignored if \code{rmd.text} is supplied.
 #'
 #' @export
 #'
@@ -43,7 +40,7 @@
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #'
 #' @example tests/test.create_chunks.R
-create_chunk = function(text=paste(readLines(file),collapse="\n"),
+create_chunk = function(text=readLines(file),
                         ...,chunk_label=NULL,
                         chunk_type="data",
                         file=NULL,chunk_options_string=NULL) {
@@ -57,9 +54,9 @@ create_chunk = function(text=paste(readLines(file),collapse="\n"),
                collapse = ', ')
 
   if (!is.null(chunk_options_string)) {
-    if (!dots=="")
-      warning("Ignoring extra arguments and using chunk_options_string.")
-    dots = chunk_options_string
+    dots = ifelse(dots=="",
+                  chunk_options_string,
+                  paste(dots,chunk_options_string,sep=", "))
   }
 
   if (!is.null(chunk_label))
@@ -75,20 +72,14 @@ create_chunk = function(text=paste(readLines(file),collapse="\n"),
 
 #' @export
 #'
-#' @describeIn create_chunk Inserts chunk contents into a Rmarkdown file
-#'   at the specified line number.
-insert_chunk = function(chunk,input.file,line,output.file=input.file,
-                        overwrite = input.file == output.file) {
-  tf = tempfile()
-  on.exit(file.remove(tf))
-
-  x = readLines(input.file)
-
-  if (line > length(x))
+#' @describeIn create_chunk Invisibly returns the contents of the modified Rmarkdown
+#'   as a character vector with each line in an element of the vector
+#'   including the chunk at the appropriate line number.
+insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
+  if (line > length(rmd.text))
     stop("line argument beyond end of input file.")
 
-  y = c(x[1:(line-1)],chunk,x[line:length(x)])
+  y = c(rmd.text[1:(line-1)],chunk,rmd.text[line:length(rmd.text)])
 
-  writeLines(y,tf)
-  invisible(file.copy(tf,output.file,overwrite=overwrite))
+  invisible(y)
 }
