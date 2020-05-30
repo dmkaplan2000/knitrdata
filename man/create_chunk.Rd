@@ -6,7 +6,7 @@
 \title{Tools for creating (data) chunks and inserting them into Rmarkdown documents}
 \usage{
 create_chunk(
-  text = paste(readLines(file), collapse = "\\n"),
+  text = readLines(file),
   ...,
   chunk_label = NULL,
   chunk_type = "data",
@@ -14,13 +14,7 @@ create_chunk(
   chunk_options_string = NULL
 )
 
-insert_chunk(
-  chunk,
-  input.file,
-  line,
-  output.file = input.file,
-  overwrite = input.file == output.file
-)
+insert_chunk(chunk, line, rmd.text = readLines(rmd.file), rmd.file = NULL)
 }
 \arguments{
 \item{text}{Character vector with contents of chunk.}
@@ -36,20 +30,17 @@ in the function call as they are entered in the function call.}
 argument supplied. As a consequence, this means that all arguments must be named
 if the \code{file} argument is supplied to \code{create_chunk}.}
 
-\item{chunk_options_string}{Character vector with text of chunk options. If given,
-additional function arguments (\dots) will be ignored with a warning if any exist.}
+\item{chunk_options_string}{Character vector with additional chunk options that will
+be included in the header after the arguments in \dots.}
 
 \item{chunk}{Character string with chunk contents including header and tail.}
 
-\item{input.file}{Rmarkdown file where chunk contents are to be inserted.}
-
 \item{line}{Line number where chunk to be inserted.}
 
-\item{output.file}{Where to write final Rmarkdown document with chunk spliced in.
-Defaults to \code{input.file}.}
+\item{rmd.text}{Text of Rmarkdown document where chunk contents are to be inserted.}
 
-\item{overwrite}{Whether or not to overwrite the \code{output.file}. Defaults to
-\code{TRUE} if \code{input.file=output.file}, otherwise \code{FALSE}.}
+\item{rmd.file}{Filename of Rmarkdown document where chunk contents are to be inserted.
+Ignored if \code{rmd.text} is supplied.}
 }
 \description{
 These helper functions allow one to add the chunk header and tail to text containing
@@ -62,8 +53,7 @@ contents of a chunk and adds the chunk header and closer, invisibly returning
 entire chunk contents as a character string.
 
 \code{insert_chunk} takes the chunk contents and inserts it at the given line number
-in the \code{input.file}. By default, it will overwrite \code{input.file} unless the
-\code{output.file} argument is supplied and is different from \code{input.file}.
+in the \code{rmd.text} or \code{rmd.file}.
 
 Note that the additional arguments to \code{create_chunk} (\dots) are not
 evaluated, but rather they are placed in the chunk header as they appear in the
@@ -73,8 +63,9 @@ function call as additional chunk options.
 \itemize{
 \item \code{create_chunk}: Silently returns chunk text contents.
 
-\item \code{insert_chunk}: Inserts chunk contents into a Rmarkdown file
-at the specified line number.
+\item \code{insert_chunk}: Invisibly returns the contents of the modified Rmarkdown
+as a character vector with each line in an element of the vector
+including the chunk at the appropriate line number.
 }}
 
 \examples{
@@ -93,13 +84,15 @@ saveRDS(x,"test.create_chunks.RDS")
 
 # Push chunks into Rmarkdown document
 # Insert in reverse order to not have to figure out line number
-create_chunk("plot(b~a,data=x)",chunk_type="r") \%>\%
-  insert_chunk("test.create_chunks.Rmd",11)
-data_encode("test.create_chunks.RDS","base64") \%>\%
+txt = create_chunk("plot(b~a,data=x)",chunk_type="r") \%>\%
+  insert_chunk(11,rmd.file="test.create_chunks.Rmd")
+txt = data_encode("test.create_chunks.RDS","base64") \%>\%
   create_chunk(output.var="x",format="binary",loader.function=readRDS) \%>\%
-  insert_chunk("test.create_chunks.Rmd",11)
-create_chunk("library(knitrdata)",chunk_type="r") \%>\%
-  insert_chunk("test.create_chunks.Rmd",11)
+  insert_chunk(11,txt)
+txt = create_chunk("library(knitrdata)",chunk_type="r") \%>\%
+  insert_chunk(11,txt)
+
+writeLines(txt,"test.create_chunks.Rmd")
 
 # Render document to test
 rmarkdown::render("test.create_chunks.Rmd")
