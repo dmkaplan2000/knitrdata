@@ -35,7 +35,7 @@ c,5.6
 ```
 ````
 
-This will load the CSV data in the chunk into the Rmarkdown R session under the variable name `d`.
+This will load the CSV data in the chunk into the Rmarkdown R session under the variable name `d`. With appropriate options, `data` chunks can handle CSV data with arbitrary delimiters and white-space delimited data, essentially anything for which an appropriate "loader function" exists in R.
 
 One can achieve the same thing and much more using a chunk containing a binary RDS file:
 
