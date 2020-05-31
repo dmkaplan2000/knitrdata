@@ -91,20 +91,46 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
 }
 
 # Functions for identifying and removing chunks --------------------------------------
+
 #' Tools for working with existing chunks in Rmarkdown documents
 #'
 #' These helper functions allow one to identify all the chunks in a Rmarkdown document
-#' and split the document into pieces by a specific chunk.
+#' and split the document into pieces by a specific chunk so that one can either work
+#' with the chunk contents or remove the chunk.
 #'
 #' \code{list_rmd_chunks} takes a Rmarkdown document and returns
 #' a \code{data.frame} listing the essential information of every chunk, including
-#' chunk type (language engine), label and start and end lines.
+#' chunk type (language engine), label and start and end line numbers.
 #'
 #' \code{split_rmd_by_chunk} takes a Rmarkdown document and a chunk label or number and
 #' returns the Rmarkdown document split into 4 pieces: the part before the chunk,
 #' the chunk header, the chunk contents, the chunk tail and the part after the chunk.
 #' These can then be used to either work with the chunk contents or remove the chunk from
 #' the Rmarkdown document.
+#'
+#' Note that the regular expression used by default to identify chunk starts is not
+#' guaranteed to be exactly the same as that used by \code{knitr} and may not work
+#' if the Rmarkdown document has unusual chunks. In particular, each chunk must have
+#' the chunk type and chunk options enclosed in curly braces. If code chunks exist without
+#' curly braces, then these will generally be ignored, but they could potentially cause
+#' problems in unusual cases.
+#'
+#' @param text Character vector with contents of chunk, one element per line of text.
+#' @param file Path to file containing chunk contents. Ignored if \code{text}
+#'   argument supplied. As a consequence, this means that all arguments must be named
+#'   if the \code{file} argument is supplied.
+#' @param chunk_label Character string giving the chunk label or the chunk number
+#'   (as returned by \code{list_rmd_chunks}.
+#' @param chunk.start.pattern Regular expression used to identify chunk starts. The
+#'   default looks for lines beginning with three back quotes, followed by curly braces
+#'   with some sort of text between them and then only spaces till the end of the line.
+#'   This should generally work, but if the Rmarkdown document has
+#'   chunks that have unusual headers, then this argument can be useful. In particular, if
+#'   the document has chunks that begin without curly braces, these will not be recognized.
+#' @param chunk.end.pattern Regular expression used to identify the chunk end. Default
+#'   should generally work.
+#' @params \dots Additional arguments to be passed from \code{split_rmd_by_chunk}
+#'   to \code{list_rmd_chunks} (e.g., \code{chunk.start.pattern}).
 #'
 #' @export
 #'
@@ -116,12 +142,21 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
 #'
 #' @example tests/test.create_chunks.R
 list_rmd_chunks = function(text=readLines(file),file=NULL,
-                           chunk.start.pattern="^```[{](.*)[}] *$",
+                           chunk.start.pattern="^```[{](.+)[}] *$",
                            chunk.end.pattern="^``` *$") {
   starts = grep(chunk.start.pattern,text)
-  ends = grep(chunk.end.pattern,text)
 
-  if (length(starts) != length(ends) || any(starts>=ends))
+  # more robust search for endings that should work even if some
+  # code chunks lack curly braces
+  ends = c()
+  for (k in 1:length(starts)) {
+    st = starts[k]+1
+    en = ifelse(k == length(starts),length(text),starts[k+1]-1)
+
+    ends[k] = st - 1 + grep(chunk.end.pattern,text[st:en])[1]
+  }
+
+  if (any(is.na(ends)))
     stop("There seems to be a mismatch between chunk starts and chunk end.")
 
   x = text[starts]
@@ -143,6 +178,14 @@ list_rmd_chunks = function(text=readLines(file),file=NULL,
 }
 
 #' @export
+#'
+#' @describeIn list_rmd_chunks Returns a list with the contents of the Rmarkdown
+#'   document broken into
+#'   4 pieces: pre-chunk, chunk header, chunk contents, chunk tail, and post-chunk.
+#' @family list_rmd_chunks
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#'
+#' @example tests/test.create_chunks.R
 split_rmd_by_chunk = function(text=readLines(file),chunk_label,file=NULL,...) {
   ch = list_rmd_chunks(text=text,...)
 
