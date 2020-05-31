@@ -3,7 +3,6 @@
 \name{create_chunk}
 \alias{create_chunk}
 \alias{insert_chunk}
-\alias{list_rmd_chunks}
 \title{Tools for creating (data) chunks and inserting them into Rmarkdown documents}
 \usage{
 create_chunk(
@@ -17,13 +16,6 @@ create_chunk(
 )
 
 insert_chunk(chunk, line, rmd.text = readLines(rmd.file), rmd.file = NULL)
-
-list_rmd_chunks(
-  text = readLines(file),
-  file = NULL,
-  chunk.start.pattern = "^```[{](.*)[}] *$",
-  chunk.end.pattern = "^``` *$"
-)
 }
 \arguments{
 \item{text}{Character vector with contents of chunk.}
@@ -57,24 +49,9 @@ Ignored if \code{rmd.text} is supplied.}
 \description{
 These helper functions allow one to add the chunk header and tail to text containing
 chunk contents and then insert that into a Rmarkdown document.
-
-These helper functions allow one to identify all the chunks in a Rmarkdown document
-and split the document into pieces by a specific chunk.
 }
 \details{
 \code{create_chunk}
-takes in the (possibly encoded by \code{data_encode})
-contents of a chunk and adds the chunk header and closer, invisibly returning
-entire chunk contents as a character string.
-
-\code{insert_chunk} takes the chunk contents and inserts it at the given line number
-in the \code{rmd.text} or \code{rmd.file}.
-
-Note that the additional arguments to \code{create_chunk} (\dots) are not
-evaluated, but rather they are placed in the chunk header as they appear in the
-function call as additional chunk options.
-
-\code{list_rmd_chunks}
 takes in the (possibly encoded by \code{data_encode})
 contents of a chunk and adds the chunk header and closer, invisibly returning
 entire chunk contents as a character string.
@@ -93,8 +70,6 @@ function call as additional chunk options.
 \item \code{insert_chunk}: Invisibly returns the contents of the modified Rmarkdown
 as a character vector with each line in an element of the vector
 including the chunk at the appropriate line number.
-
-\item \code{list_rmd_chunks}: Silently returns chunk text contents.
 }}
 
 \examples{
@@ -130,42 +105,8 @@ rmarkdown::render("test.create_chunks.Rmd")
 file.remove("test.create_chunks.Rmd","test.create_chunks.RDS",
             "test.create_chunks.md","test.create_chunks.html")
 unlink("test.create_chunks_files",recursive=TRUE)
-library(knitrdata)
-library(tidyr) # For pipe operator
-
-# Create new Rmarkdown document
-if (file.exists("test.create_chunks.Rmd"))
-  file.remove("test.create_chunks.Rmd")
-rmarkdown::draft("test.create_chunks.Rmd","github_document","rmarkdown",
-                 edit=FALSE)
-
-# Create some binary data
-x = data.frame(a=1:10,b=(1:10)^2)
-saveRDS(x,"test.create_chunks.RDS")
-
-# Push chunks into Rmarkdown document
-# Insert in reverse order to not have to figure out line number
-txt = create_chunk("plot(b~a,data=x)",chunk_type="r") \%>\%
-  insert_chunk(11,rmd.file="test.create_chunks.Rmd")
-txt = data_encode("test.create_chunks.RDS","base64") \%>\%
-  create_chunk(output.var="x",format="binary",loader.function=readRDS) \%>\%
-  insert_chunk(11,txt)
-txt = create_chunk("library(knitrdata)",chunk_type="r") \%>\%
-  insert_chunk(11,txt)
-
-writeLines(txt,"test.create_chunks.Rmd")
-
-# Render document to test
-rmarkdown::render("test.create_chunks.Rmd")
-
-# Clean up
-file.remove("test.create_chunks.Rmd","test.create_chunks.RDS",
-            "test.create_chunks.md","test.create_chunks.html")
-unlink("test.create_chunks_files",recursive=TRUE)
 }
 \author{
-David M. Kaplan \email{dmkaplan2000@gmail.com}
-
 David M. Kaplan \email{dmkaplan2000@gmail.com}
 }
 \concept{create_chunks}

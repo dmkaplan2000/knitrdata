@@ -91,12 +91,20 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
 }
 
 # Functions for identifying and removing chunks --------------------------------------
-#' Tools for listing chunks in Rmarkdown documents and eventually removing them
+#' Tools for working with existing chunks in Rmarkdown documents
 #'
 #' These helper functions allow one to identify all the chunks in a Rmarkdown document
 #' and split the document into pieces by a specific chunk.
 #'
-#' \code{list_rmd_chunks}
+#' \code{list_rmd_chunks} takes a Rmarkdown document and returns
+#' a \code{data.frame} listing the essential information of every chunk, including
+#' chunk type (language engine), label and start and end lines.
+#'
+#' \code{split_rmd_by_chunk} takes a Rmarkdown document and a chunk label or number and
+#' returns the Rmarkdown document split into 4 pieces: the part before the chunk,
+#' the chunk header, the chunk contents, the chunk tail and the part after the chunk.
+#' These can then be used to either work with the chunk contents or remove the chunk from
+#' the Rmarkdown document.
 #'
 #' @export
 #'
@@ -134,7 +142,7 @@ list_rmd_chunks = function(text=readLines(file),file=NULL,
   return(res)
 }
 
-
+#' @export
 split_rmd_by_chunk = function(text=readLines(file),chunk_label,file=NULL,...) {
   ch = list_rmd_chunks(text=text,...)
 
@@ -145,8 +153,12 @@ split_rmd_by_chunk = function(text=readLines(file),chunk_label,file=NULL,...) {
 
   pre_chunk = text[1:(x$start-1)]
   header = text[x$start]
-  content = text[(x$start+1):(x$end-1)]
   tail = text[x$end]
+
+  if (x$end-x$start<=1)
+    content=NULL
+  else
+    content = text[(x$start+1):(x$end-1)]
 
   post_chunk = NULL
   if (x$end < length(text))
