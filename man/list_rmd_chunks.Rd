@@ -33,6 +33,9 @@ should generally work.}
 
 \item{chunk_label}{Character string giving the chunk label or the chunk number
 (as returned by \code{list_rmd_chunks}.}
+
+\item{\dots}{Additional arguments to be passed from \code{split_rmd_by_chunk}
+to \code{list_rmd_chunks} (e.g., \code{chunk.start.pattern}).}
 }
 \description{
 These helper functions allow one to identify all the chunks in a Rmarkdown document
@@ -69,6 +72,7 @@ document broken into
 }}
 
 \examples{
+# Test --------------
 library(knitrdata)
 library(tidyr) # For pipe operator
 
@@ -84,7 +88,7 @@ saveRDS(x,"test.create_chunks.RDS")
 
 # Push chunks into Rmarkdown document
 # Insert in reverse order to not have to figure out line number
-txt = create_chunk("plot(b~a,data=x)",chunk_type="r") \%>\%
+txt = create_chunk("x\nplot(b~a,data=x)",chunk_type="r") \%>\%
   insert_chunk(11,rmd.file="test.create_chunks.Rmd")
 txt = data_encode("test.create_chunks.RDS","base64") \%>\%
   create_chunk(output.var="x",format="binary",loader.function=readRDS) \%>\%
@@ -94,13 +98,27 @@ txt = create_chunk("library(knitrdata)",chunk_type="r") \%>\%
 
 writeLines(txt,"test.create_chunks.Rmd")
 
+# List all chunks in documents
+chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
+chunklst
+
+# Remove the pressure chunk
+xx = split_rmd_by_chunk(file="test.create_chunks.Rmd",chunk_label="pressure")
+txt = c(xx$pre_chunk,xx$post_chunk)
+writeLines(txt,"test.create_chunks.Rmd")
+
+# List chunks again
+chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
+chunklst
+
 # Render document to test
 rmarkdown::render("test.create_chunks.Rmd")
 
-# Clean up
+# Clean up --------------
 file.remove("test.create_chunks.Rmd","test.create_chunks.RDS",
             "test.create_chunks.md","test.create_chunks.html")
 unlink("test.create_chunks_files",recursive=TRUE)
+# Test --------------
 library(knitrdata)
 library(tidyr) # For pipe operator
 
@@ -116,7 +134,7 @@ saveRDS(x,"test.create_chunks.RDS")
 
 # Push chunks into Rmarkdown document
 # Insert in reverse order to not have to figure out line number
-txt = create_chunk("plot(b~a,data=x)",chunk_type="r") \%>\%
+txt = create_chunk("x\nplot(b~a,data=x)",chunk_type="r") \%>\%
   insert_chunk(11,rmd.file="test.create_chunks.Rmd")
 txt = data_encode("test.create_chunks.RDS","base64") \%>\%
   create_chunk(output.var="x",format="binary",loader.function=readRDS) \%>\%
@@ -126,10 +144,23 @@ txt = create_chunk("library(knitrdata)",chunk_type="r") \%>\%
 
 writeLines(txt,"test.create_chunks.Rmd")
 
+# List all chunks in documents
+chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
+chunklst
+
+# Remove the pressure chunk
+xx = split_rmd_by_chunk(file="test.create_chunks.Rmd",chunk_label="pressure")
+txt = c(xx$pre_chunk,xx$post_chunk)
+writeLines(txt,"test.create_chunks.Rmd")
+
+# List chunks again
+chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
+chunklst
+
 # Render document to test
 rmarkdown::render("test.create_chunks.Rmd")
 
-# Clean up
+# Clean up --------------
 file.remove("test.create_chunks.Rmd","test.create_chunks.RDS",
             "test.create_chunks.md","test.create_chunks.html")
 unlink("test.create_chunks_files",recursive=TRUE)

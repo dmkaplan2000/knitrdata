@@ -156,12 +156,14 @@ Data is incorporated into Rmarkdown documents using `data` chunks that consist o
 
 The simplest possible `data` chunk is a text data chunk containing plain text. Textual data can be directly placed into a data chunk in an Rmarkdown document as follows:
 
-    `r ''````{data output.var="d"}
-    a,b
-    1,a
-    2,b
-    3,c
-    `r ''````
+````markdown
+`r ''````{data output.var="d"}
+a,b
+1,a
+2,b
+3,c
+`r ''````
+````
 
 ```{data output.var="d",echo=FALSE}
 a,b
@@ -176,14 +178,16 @@ When the Rmarkdown document is knitted, this chunk will put the text contents of
 read.csv(text=d)
 ```
 
-One can also load the data directly into a `data.frame` using the `loader.function` chunk option. This should be a function (or a character string containing the name of a function) whose first input argument will be the name of a file. The (decoded) `data` chunk contents will be passed to this function and the output will be assigned to the variable name contained in `output.var`.
+One can also load the data directly into a `data.frame` using the `loader.function` chunk option. The `loader.function` should be a function (or a character string containing the name of a function) whose first input argument will be the name of a file. A file containing the (decoded) `data` chunk contents will be passed to this function and the output will be assigned to the variable name contained in `output.var`.
 
-    `r ''````{data output.var="d",loader.function=read.csv}
-    a,b
-    1,a
-    2,b
-    3,c
-    `r ''````
+````markdown
+`r ''````{data output.var="d",loader.function=read.csv}
+a,b
+1,a
+2,b
+3,c
+`r ''````
+````
 
 ```{data output.var="d",echo=FALSE,loader.function=read.csv}
 a,b
@@ -200,12 +204,14 @@ d
 
 Additional input arguments can be passed to `loader.function` by supplying a list as the `loader.ops` chunk option:
 
-    `r ''````{data output.var="d",loader.function=read.csv,loader.ops=list(header=FALSE)}
-    a,b
-    1,a
-    2,b
-    3,c
-    `r ''````
+````markdown
+`r ''````{data output.var="d",loader.function=read.csv,loader.ops=list(header=FALSE)}
+a,b
+1,a
+2,b
+3,c
+`r ''````
+````
 
 ```{data output.var="d",echo=FALSE,loader.function=read.csv,loader.ops=list(header=FALSE)}
 a,b
@@ -220,17 +226,64 @@ d
 
 Note that in this case the first line of the CSV data has been treated as data instead of as a header because we supplied the `header=FALSE` optional argument.
 
+### Text documents in data chunks
+
+The *data* inside a text `data` chunk does not have to be scientific data. It can be any textual information, including the contents of formatting files used by Rmarkdown to generate final output documents. These include BibTeX files with references, LaTeX style files (.cls) and bibliography style files (.csl). For example, if we include the following in a Rmarkdown document:
+
+````markdown
+`r ''````{data output.file="references.bib",echo=FALSE}
+@article{MeynardTestingmethodsspecies2019,
+  ids = {MeynardTestingmethodsspecie,MeynardTestingmethodsspeciesinpress},
+  title = {Testing Methods in Species Distribution Modelling Using Virtual Species: What Have We Learnt and What Are We Missing?},
+  shorttitle = {Testing Methods in Species Distribution Modelling Using Virtual Species},
+  author = {Meynard, Christine N. and Leroy, Boris and Kaplan, David M.},
+  year = {2019},
+  month = dec,
+  volume = {42},
+  pages = {2021--2036},
+  issn = {0906-7590, 1600-0587},
+  doi = {10.1111/ecog.04385},
+  file = {/home/dmk/papers/meynard.et.al.2019.testing_methods_in_species_distribution_modelling_using_virtual_species.pdf},
+  journal = {Ecography},
+  keywords = {artificial species,environmental niche models,niche,simulations,species distribution modelling,virtual ecologist},
+  language = {en},
+  number = {12}
+}
+
+@article{SantosConsequencesdriftcarcass2018,
+  title = {Consequences of Drift and Carcass Decomposition for Estimating Sea Turtle Mortality Hotspots},
+  author = {Santos, Bianca S. and Kaplan, David M. and Friedrichs, Marjorie A. M. and Barco, Susan G. and Mansfield, Katherine L. and Manning, James P.},
+  year = {2018},
+  month = jan,
+  volume = {84},
+  pages = {319--336},
+  issn = {1470-160X},
+  doi = {10.1016/j.ecolind.2017.08.064},
+  copyright = {All rights reserved},
+  file = {/home/dmk/papers/santos.et.al.2018.consequences_of_drift_and_carcass_decomposition_for_estimating_sea_turtle.pdf},
+  journal = {Ecological Indicators},
+  keywords = {Carcass decomposition,Chesapeake bay,Conservation,Drift leeway,Drift simulations,Endangered species,Sea turtle mortality,Sea turtle strandings}
+}
+`r ''````
+````
+
+This will generate the file `references.bib` from the chunk contents. Note that one uses `output.file` instead of `output.var` to save the contents to a file.
+
+As style files like the BibTeX file described above are only used by knitr/pandoc in the final formatting phase of generating an output document, these files can be generated from `data` chunks during the initial phases of the knitting. This allows them to be stored inside the Rmarkdown document itself, with no need for the external file prior to knitting.
+
 ### Base64-encoded binary data chunks
 
 Base64 encoded binary data is incorporated into a chunk by copying the output of the `data_encode` function into the chunk and supplying the `format="binary"` chunk option:
 
-    `r ''````{data output.var="b",format="binary",echo=FALSE}
-    H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
-    kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
-    6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
-    yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
-    OwBVQunahwEAAA==
-    `r ''````
+````markdown
+`r ''````{data output.var="b",format="binary",echo=FALSE}
+H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
+kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
+6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
+yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
+OwBVQunahwEAAA==
+`r ''````
+````
 
 ```{data output.var="b",format="binary",include=FALSE}
 H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
@@ -248,32 +301,35 @@ The contents of the raw vector `b` must be written to a file before they can be 
 writeBin(b,"test_output.RDS")
 ```
 
-We can skip this writing step by specifying the `output.file` chunk option instead of `output.var`:
+We can combine the decoding and the writing steps by specifying the `output.file` chunk option instead of `output.var`:
 
-    `r ''````{data output.file="test_output.RDS",format="binary",echo=FALSE}
-    H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
-    kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
-    6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
-    yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
-    OwBVQunahwEAAA==
-    `r ''````
+````markdown
+`r ''````{data output.file="test_output.RDS",format="binary",echo=FALSE}
+H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
+kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
+6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
+yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
+OwBVQunahwEAAA==
+`r ''````
+````
 
-Then this file can be read back into the Rmarkdown session:
+This will save the decoded data to the filename given by `output.file`. Then this file can be read back into the Rmarkdown session:
 
 ```{r}
 readRDS("test_output.RDS")
 ```
 
-Finally, we can skip both the writing and reading steps using the `loader.function` chunk option:
+Finally, we can combine all three steps (decoding, writing to disk, reading back into R) using the `loader.function` chunk option:
 
-
-    `r ''````{data output.var="b",format="binary",echo=FALSE,loader.function=readRDS}
-    H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
-    kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
-    6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
-    yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
-    OwBVQunahwEAAA==
-    `r ''````
+````markdown
+`r ''````{data output.var="b",format="binary",echo=FALSE,loader.function=readRDS}
+H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
+kvNzCxKTS+Iz80qKUwvRZFmSEotToWK8YHEI/Q+kE2SVAwcDGNh/QKUhaph5wc6B
+6GOCsFmQzWfLSS1LzSkGsgTAshBRxkQYIwnGSEbTyJqck1gM0wc3LQ3okfwiiN2o
+yvMSc1NhypmwWANWzvIfzUCulMSSRL20IqBmNAM5i/LL9WCGgnzJ1AAk/v///xdk
+OwBVQunahwEAAA==
+`r ''````
+````
 
 ```{data output.var="b",format="binary",include=FALSE,loader.function=readRDS}
 H4sIAAAAAAAAA4vgYmBgYGZgZgNiViCTgTU0xE3XAigmDOQwAfE7KM3IwMLACaT5
@@ -291,91 +347,93 @@ b
 
 ### GPG-encoded data chunks
 
-GPG chunks work similar to base64 chunks except that one must specify `encoding="gpg"`. To demonstrate this functionality, we first import into the GPG keyring the private key previously used to encode some data. We would never include the private key in an Rmarkdown document in a real use case, but this is practical for this vignette and it demonstrates another use of `data` chunks.
+GPG chunks work similar to base64 chunks except that one must specify `encoding="gpg"`. To demonstrate this functionality, we first import into the GPG keyring the private key previously used to encode some data. We would never include the private key in an Rmarkdown document in a real use case, but this is practical for this vignette and it demonstrates another use of text `data` chunks.
 
-    `r ''````{data key,output.file="key",include=FALSE}
-    -----BEGIN PGP PRIVATE KEY BLOCK-----
-    
-    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
-    =C6UF
-    -----END PGP PRIVATE KEY BLOCK-----
-    `r ''````
+````markdown
+`r ''````{data key,output.file="key",include=FALSE}
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+
+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
+=C6UF
+-----END PGP PRIVATE KEY BLOCK-----
+`r ''````
+````
 
 ```{data key,output.file="key",include=FALSE,eval=requireNamespace("gpg") && params$run_gpg}
 -----BEGIN PGP PRIVATE KEY BLOCK-----
@@ -469,27 +527,29 @@ gpg::gpg_import("key")
 
 Now that we have this private key, we can decode some binary data encrypted using this key:
 
-    `r ''````{data t3,format="binary",encoding="gpg",output.var="d",loader.function=readRDS}
-    -----BEGIN PGP MESSAGE-----
-    Version: GnuPG v2
-    
-    hQGMA9TPonHna5j3AQv7BIPNOSR/024iE0Gj3DCo3DvLvj/oEJ29XORHBkn4nul1
-    +zaRV5E/K4LCKxkkAEx/+FdM72x1hV5FF5Vf0FSet1RHiOOXPuChEEzRHOubkh/U
-    gw44Q72d8Dp6TOJ+1KT5k/fdkVKsOZRSttL8hvxqC4nyfObF0CkIoG+Kfx+kkYqu
-    araVWqNtcb3/FbtT+ZC0Hip0Ws6IJ8mGOhZdRxZ3S8KUtgf/t7S3Wa75c6L1wolT
-    R1/WhPgcWB4epLTvHdSmv9qcu/vFXE8SmNE5MV4V2aSTRU7y9WdPW/+XzU2Et4BK
-    kGyzhkI6q7QzAXFOeD1sn0uaUeH9/BDwn3AJZEXkwN4qaarPpDKjZ9GVE9Gg8521
-    BYe7AIZwq7sfnF+v1WyxamFYpSSAiNHze00MHPWot3Db+4SpRFYIWlYlZF00HIMo
-    Qspb4AmIfnNo9zj0RGG7GJoyod8ZrW4RF5iOEUWtyQ5z6LzymGTSdArWOq1fDgYW
-    tvEgbkbdYsJA6usJ3Zxc0sBJARfA6gDCFF72nGiAoNS98zoFjtD7hznY9DBvCOoF
-    jzJ8kHfPQPK9/bRVuofUDP+jOoJyf8/7eB6kANNq+XrzoZL0N42zHR2n47xupqYN
-    GSdsRljTra8a9zWIs9k8E5/79qRvV25c/wPeysulWkzhLCDaCMMVYJvQQ0JgT2L+
-    /eBtDeAuqkCqiDjeEGGB0Q4Q81IOIHMxUXFPJHvWJE4eJhnRjLmuPCBDQdL0JYTS
-    Bc48A/eA/cbfUr+4RluY9RLcaUHRPjKT8e7X98VdnSBPGvikVpSjR3zZhPNQs7Vb
-    C7H5lml4B8FpRgQBFwt2ou8URLRYR82tUa/OcsByW9jxf988YZx57a1hAw==
-    =m4sT
-    -----END PGP MESSAGE-----
-    `r ''````
+````markdown
+`r ''````{data t3,format="binary",encoding="gpg",output.var="d",loader.function=readRDS}
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v2
+
+hQGMA9TPonHna5j3AQv7BIPNOSR/024iE0Gj3DCo3DvLvj/oEJ29XORHBkn4nul1
++zaRV5E/K4LCKxkkAEx/+FdM72x1hV5FF5Vf0FSet1RHiOOXPuChEEzRHOubkh/U
+gw44Q72d8Dp6TOJ+1KT5k/fdkVKsOZRSttL8hvxqC4nyfObF0CkIoG+Kfx+kkYqu
+araVWqNtcb3/FbtT+ZC0Hip0Ws6IJ8mGOhZdRxZ3S8KUtgf/t7S3Wa75c6L1wolT
+R1/WhPgcWB4epLTvHdSmv9qcu/vFXE8SmNE5MV4V2aSTRU7y9WdPW/+XzU2Et4BK
+kGyzhkI6q7QzAXFOeD1sn0uaUeH9/BDwn3AJZEXkwN4qaarPpDKjZ9GVE9Gg8521
+BYe7AIZwq7sfnF+v1WyxamFYpSSAiNHze00MHPWot3Db+4SpRFYIWlYlZF00HIMo
+Qspb4AmIfnNo9zj0RGG7GJoyod8ZrW4RF5iOEUWtyQ5z6LzymGTSdArWOq1fDgYW
+tvEgbkbdYsJA6usJ3Zxc0sBJARfA6gDCFF72nGiAoNS98zoFjtD7hznY9DBvCOoF
+jzJ8kHfPQPK9/bRVuofUDP+jOoJyf8/7eB6kANNq+XrzoZL0N42zHR2n47xupqYN
+GSdsRljTra8a9zWIs9k8E5/79qRvV25c/wPeysulWkzhLCDaCMMVYJvQQ0JgT2L+
+/eBtDeAuqkCqiDjeEGGB0Q4Q81IOIHMxUXFPJHvWJE4eJhnRjLmuPCBDQdL0JYTS
+Bc48A/eA/cbfUr+4RluY9RLcaUHRPjKT8e7X98VdnSBPGvikVpSjR3zZhPNQs7Vb
+C7H5lml4B8FpRgQBFwt2ou8URLRYR82tUa/OcsByW9jxf988YZx57a1hAw==
+=m4sT
+-----END PGP MESSAGE-----
+`r ''````
+````
 
 ```{data t3,format="binary",encoding="gpg",output.var="d",loader.function=readRDS,include=FALSE,eval=requireNamespace("gpg") && params$run_gpg}
 -----BEGIN PGP MESSAGE-----
@@ -522,18 +582,80 @@ id = gpg::gpg_list_keys("test@test.org")$id
 gpg::gpg_delete(id,secret=TRUE)
 ```
 
+### Helper functions for creating and inserting data chunks
+
+For small data chunks, one can copy-paste the (encoded) data from the command line or from a file into a Rmarkdown document. For larger data chunks, this can be awkward, so `knitrdata` includes two helper functions for creating and inserting `data` chunks into Rmarkdown documents: `create_chunk` and `insert_chunk`. We can combine these functions with `data_encode` to generate the base64 `data` chunk described above. First, we use `create_chunk` to generate the chunk:
+
+```{r include=FALSE}
+rmarkdown::draft("example.Rmd","github_document","rmarkdown",
+                 edit=FALSE)
+```
+
+```{r}
+library(tidyr) # For pipe operator
+
+chunk = data_encode("test.RDS","base64") %>%
+  create_chunk(chunk_label="mydata",output.var="d",format="binary",echo=FALSE,
+               loader.function=readRDS)
+
+cat(chunk,sep="\n")
+```
+
+Note that with the exception to the chunk label, chunk contents and other named arguments to this function, all the other arguments are not evaluated, so they can be given exactly as they should appear in the Rmarkdown document regardless of whether the chunk options make sense in the current context.
+
+Next, we can use `insert_chunk` to place this chunk at a given line number in
+a Rmarkdown file (here taken to be `example.Rmd`):
+
+```{r}
+rmd = insert_chunk(chunk,11,rmd.file="example.Rmd")
+writeLines(rmd,"example_with_data_chunk.Rmd")
+```
+
+This will insert the new `data` chunk at line 11 in the Rmarkdown document.
+
+`knitrdata` also includes the `list_rmd_chunks` and `splice_rmd_by_chunk` functions for identifying and potentially removing or working with the chunks in a Rmarkdown document. See the documentation and examples for these functions for more details on their use.
+
+### Data integrity checks using md5sum
+
+Using the procedures above should assure that data inside `data` chunks do not have errors. Nevertheless, there is always the possibility that a stray keystroke would modify the data, particularly for binary data encoded as text. To protect against this, `data` chunks can have a `md5sum` chunk option that will be used to test if the decoded data matches expectations. A MD5 sum is essentially a very large number (typically encoded in hexadecimal) derived from a file's contents that has a vanishingly small probability of being equal to the the equivalent number derived from a *different* file's contents. If two files have the same MD5 sum, they are almost certainly identical.
+
+To use the `md5sum` chunk option, one must first determine the MD5 sum of the *decoded* source data:
+
+```{r}
+tools::md5sum("test.RDS")
+```
+
+If this character string is given as the `md5sum` chunk option to a data chunk, then the MD5 sum of the *decoded* data of that chunk will be calculated and checked against this character string. If the two do not match, an error will be generated.
+
+We can add a MD5 sum check to the `data` chunk generated in the previous section as follows:
+
+```{r}
+md5 = tools::md5sum("test.RDS")
+chunk = data_encode("test.RDS","base64") %>%
+  create_chunk(chunk_label="mydata",output.var="d",format="binary",
+               echo=FALSE,loader.function=readRDS,
+               chunk_options_string = paste0("md5sum='",md5,"'"))
+
+cat(chunk,sep="\n")
+```
+
+`md5sum` can be used on all `data` chunk types, including text `data` chunks
+that are not encoded in any special way.
+
 ### Reading a data chunk from an external file
 
-One disadvantage of using `data` chunks is that it can make Rmarkdown files long and difficult to navigate if you use lots of data. Rstudio can help with this problem by allowing one to hide the contents of a chunk, but large file size can still be a problem. To facilitate the initial construction of standalone Rmarkdown documents, data chunks can be read from external files using the `external.file` chunk option. The external file must contain the text-encoded chunk contents exactly as they would appear in a `data` chunk. The intended use of this option is that large data chunks would be placed initially in external files, but the contents of these files would be placed directly in the `data` chunks before sharing the document with others. 
+One disadvantage of using `data` chunks is that it can make Rmarkdown files long and difficult to navigate if you use lots of data. Rstudio can help with this problem by allowing one to hide the contents of a chunk and by using navigation tools to jump between section. In addition, using `insert_chunk` to place a `data` chunk inside a document as the last step before public diffusion may avoid having to work extensively with the large file. Nevertheless, large file size can still be a problem. To facilitate the initial construction of standalone Rmarkdown documents, data chunks can be read from external files using the `external.file` chunk option. The external file must contain the *encoded* chunk contents exactly as they would appear in a `data` chunk. The intended use of this option is that large data chunks would be placed initially in external files, but the contents of these files would be placed directly in the `data` chunks before sharing the document with others. 
 
 ```{r}
 writeLines(c("This is from an external file.","It has two lines."),
            "test_external.txt")
 ```
 
-    `r ''````{data ext,output.var="ext",external.file="test_external.txt"}
-    Content will be ignored with a warning!
-    `r ''````
+````markdown
+`r ''````{data ext,output.var="ext",external.file="test_external.txt"}
+Content will be ignored with a warning!
+`r ''````
+````
 
 ```{data ext,output.var="ext",external.file="test_external.txt",include=FALSE}
 Content will be ignored with a warning!
@@ -547,13 +669,13 @@ cat(ext)
 
 There are many potential scenarios where including data inside Rmarkdown documents can be useful. The most obvious is to render a document fully standalone, perhaps for creating a single document that reproduces an entire publication or report or to make life as simple as possible for collaborators that are not comfortable managing complex Rmarkdown documents requiring multiple files. To do this, one would place not only data inside chunks in the Rmarkdown document, but also ancillary files associated with the document, such as CSS, LaTeX and CSL (bibliography) style files, and BibTeX files. These latter chunks would typically recreate these external files using the `output.file` chunk option.
 
-`knitrdata` also has uses in cases where the objective is not necessarily to render a document fully standalone. One can use it as a convenient way to input small data tables and data vectors (see [Numeric vector data](#vectdata) below) into an Rmarkdown document. For example, the `data` chunk syntax combined with CSV data may be simpler and cleaner than creating a data.frame directly in R code. Furthermore, though markdown allows one to create small tables by hand, it is difficult or impossible to reproduce the sophisticated tables that `knitr::kable` and `kableExtra` are capable of creating, and tables created in markdown may not *float* as other tables do, potentially a problem for producing scientific publications with Rmarkdown. `knitrdata` can be used as a simple way to input these tables into an R data.frame, which can then be used as input to `kable` and other tools. Finally, `data` chunks provide a convenient system for making certain Rmarkdown document text conditional on parameter values or results (see [Conditional text in Rmarkdown using knitrdata](#condtext)).
+`knitrdata` also has uses in cases where the objective is not necessarily to render a document fully standalone. One can use it as a convenient way to input small data tables and data vectors (e.g., see [Numeric vector data](#vectdata) below) into an Rmarkdown document. For example, the `data` chunk syntax combined with CSV data may be simpler and cleaner than creating a `data.frame` or `tibble` directly in R code. Furthermore, though markdown allows one to create small tables by hand, it is difficult or impossible to reproduce the sophisticated tables that `knitr::kable` and `kableExtra` are capable of creating, and tables created in markdown may not *float* as other tables do, potentially an issue for producing scientific publications with Rmarkdown. `knitrdata` can be used as a simple way to input these tables into R, which can then be used as input to `kable` and other tools. Finally, `data` chunks provide a convenient system for making certain Rmarkdown document text conditional on parameter values or results (see [Conditional text in Rmarkdown using knitrdata](#condtext)).
 
-One `knitrdata` feature that may at first glance seem to be of little value is the possibility to `gpg` encrypt data chunks. Why would one want to encrypt just the data when one can encrypt the entire Rmarkdown document? However, there are many cases where the data themselves are confidential (e.g., economically important data, confidential medical information), but the methods used to analyze and synthesize those data can and should be publicly available. Furthermore, it is increasingly common to share code and documents on public collaboration websites, such as [github](www.github.com) or [slack](www.slack.com), but one may not have sufficient confidence in these websites to give them access to the data themselves.  
+One `knitrdata` feature that may at first glance seem to be of little value is the possibility to `gpg` encrypt data chunks. Why would one want to encrypt just the data when one can encrypt the entire Rmarkdown document? However, there are many cases where the data themselves are confidential (e.g., economically important data, confidential medical information), but the methods used to analyze and synthesize those data can and should be publicly available. Furthermore, it is increasingly common to share code and documents on public collaboration websites, such as [github](www.github.com) or [slack](www.slack.com), but one may not have sufficient confidence in the privacy protections of these websites to give them access to the data themselves.  
 
 ## When not to use data chunks
 
-Though the `knitrdata` package can be a powerful tool, it can also be easily abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. The option to collapse `data` chunks in Rstudio and the use of the `external.file` chunk option may reduce the importance of these issues in some cases, but including very large amounts of data in Rmarkdown documents should be avoided.
+Though the `knitrdata` package can be a powerful tool, it can also be abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. The options to collapse `data` chunks in Rstudio, use Rstudio's navigation tools, use `knitrdata`'s helper functions for `data` chunk creation and the use of the `external.file` chunk option may reduce the importance of these issues in some cases, but including very large amounts of data in Rmarkdown documents is unlikely to be optimal. Basic prudence should be used when decided what and how much data to include in Rmarkdown documents.
 
 ## Tips & tricks {#tt}
 
@@ -561,15 +683,28 @@ Though the `knitrdata` package can be a powerful tool, it can also be easily abu
 
 You can use a data chunk to load numeric vector data as follows:
 
-```{data output.var="v"}
+````markdown
+`r ''````{data output.var="v",line.sep=""}
+1.2,3.4,5.6,
+7.8,9.0
+`r ''````
+
+`r ''````{r}
+v = as.numeric(strsplit(v,",")[[1]])
+v
+`r ''````
+````
+
+```{data output.var="v",line.sep="",echo=FALSE}
 1.2,3.4,5.6,
 7.8,9.0
 ```
 
-```{r}
-v = as.numeric(strsplit(v,"[,\n]+")[[1]])
+```{r echo=FALSE}
+v = as.numeric(strsplit(v,",")[[1]])
 v
 ```
+
 
 ### Conditional text in Rmarkdown using knitrdata {#condtext}
 
@@ -582,17 +717,19 @@ params:
 
 And then one could include content in the document based on this parameter as follows:
 
-    `r ''````{data include=FALSE,output.var="cond_text"}
-    # A conditional section
-    
-    Some conditional text.
-    `r ''````
-    
-    `r ''````{r results='asis',echo=FALSE,eval=params$cond}
-    cat(cond_text)
-    `r ''````
+````markdown
+`r ''````{data include=FALSE,output.var="cond_text"}
+# A conditional section
 
-This will add **A conditional section** and its contents only if `params$cond=TRUE`. There are other methods to achieve this, but this method is reasonably straightforward with low overhead.
+Some conditional text.
+`r ''````
+
+`r ''````{r results='asis',echo=FALSE,eval=params$cond}
+cat(cond_text)
+`r ''````
+````
+
+This will add **A conditional section** and its contents only if `params$cond=TRUE`. There are other methods to achieve this, but this method is reasonably straightforward with low overhead. One disadvantage to this approach is that one cannot use inline R code or R code chunks within the text as this code will never be processed by `knitr`. This weakness can, however, be overcome by placing markers for dynamic elements and replacing them using `sprintf` or similar before outputing the text to the document.
 
 ## Full list of data chunk options
 
@@ -604,7 +741,7 @@ Chunk option|Description
 `encoding`|One of `'"asis"'`, `'"base64"'` or `'"gpg"'`. Defaults to `'"asis"'` for `format='"text"'` and `'"base64"'` for `format='"binary"'`.
 `decoding.ops`|A list with additional arguments for `data_decode`. Currently only useful for passing the `verify` argument to `gpg::gpg_decrypt` for `gpg` encrypted chunks.
 `external.file`|A character string with the name of a file whose text contents will be used as if they were the contents of the data chunk.
-`md5sum`|A character string giving the correct md5sum of *decoded* chunk data. If supplied, the md5sum of the decoded data will be calculated and compared to the supplied value, returning an error if the two do not match.
+`md5sum`|A character string giving the correct md5sum of the *decoded* chunk data. If supplied, the md5sum of the decoded data will be calculated and compared to the supplied value, returning an error if the two do not match.
 `output.var`|A character string with the variable name to which the chunk output will be assigned. At least one of `output.var` or `output.file` must always be supplied.
 `output.file`|A character string with the filename to which the chunk output will be written. At least one of `output.var` or `output.file` must always be supplied.
 `loader.function`|A function that will be passed (as the first argument) the name of a file containing the (potentially decoded) contents of the data chunk.
@@ -619,6 +756,7 @@ knitr::kable(t,caption="Full list of knitrdata chunk options.")
 <!-- Cleanup -->
 ```{r remove_temp_files,include=FALSE,message=FALSE}
 file.remove("test_external.txt","test.RDS.base64","test_output2.RDS",
-            "key","test_output.RDS","test.RDS","test.csv")
+            "key","test_output.RDS","test.RDS","test.csv",
+            "example.Rmd","example_with_data_chunk.Rmd")
 ```
 

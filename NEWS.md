@@ -3,8 +3,9 @@ knitrdata 0.3.0
 
 - Added md5sum checks on `data` chunks
 - Added `create_chunk` and `insert_chunk` to facilitate placing chunks in Rmarkdown docs
+- Added `list_rmd_chunks` and `splice_rmd_by_chunk` to facilitate removing and decoding `data` chunks
 - Expanded README
-- Vignette update
+- Vignette update for new features
 
 knitrdata 0.2.1
 ---------------------------------------------------------------------

@@ -129,8 +129,6 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
 #'   the document has chunks that begin without curly braces, these will not be recognized.
 #' @param chunk.end.pattern Regular expression used to identify the chunk end. Default
 #'   should generally work.
-#' @params \dots Additional arguments to be passed from \code{split_rmd_by_chunk}
-#'   to \code{list_rmd_chunks} (e.g., \code{chunk.start.pattern}).
 #'
 #' @export
 #'
@@ -177,6 +175,9 @@ list_rmd_chunks = function(text=readLines(file),file=NULL,
   return(res)
 }
 
+#' @param \dots Additional arguments to be passed from \code{split_rmd_by_chunk}
+#'   to \code{list_rmd_chunks} (e.g., \code{chunk.start.pattern}).
+#'
 #' @export
 #'
 #' @describeIn list_rmd_chunks Returns a list with the contents of the Rmarkdown
