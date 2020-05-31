@@ -27,6 +27,8 @@
 #'   in the function call as they are entered in the function call.
 #' @param chunk_options_string Character vector with additional chunk options that will
 #'   be included in the header after the arguments in \dots.
+#' @param split_lines Boolean indicating whether or not the chunk contents should be split
+#'   along line break (\code{'\n'}) before returning. Defaults to \code{TRUE}.
 #' @param chunk Character string with chunk contents including header and tail.
 #' @param line Line number where chunk to be inserted.
 #' @param rmd.text Text of Rmarkdown document where chunk contents are to be inserted.
@@ -43,7 +45,8 @@
 create_chunk = function(text=readLines(file),
                         ...,chunk_label=NULL,
                         chunk_type="data",
-                        file=NULL,chunk_options_string=NULL) {
+                        file=NULL,chunk_options_string=NULL,
+                        split_lines=TRUE) {
   text = paste(text,collapse="\n")
 
   # Get additional input options as character string
@@ -67,6 +70,9 @@ create_chunk = function(text=readLines(file),
 
   chunk = paste(header,text,tail,sep="\n")
 
+  if (split_lines)
+    chunk = strsplit(chunk,"\n")[[1]]
+
   invisible(chunk)
 }
 
@@ -82,4 +88,70 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
   y = c(rmd.text[1:(line-1)],chunk,rmd.text[line:length(rmd.text)])
 
   invisible(y)
+}
+
+# Functions for identifying and removing chunks --------------------------------------
+#' Tools for listing chunks in Rmarkdown documents and eventually removing them
+#'
+#' These helper functions allow one to identify all the chunks in a Rmarkdown document
+#' and split the document into pieces by a specific chunk.
+#'
+#' \code{list_rmd_chunks}
+#'
+#' @export
+#'
+#' @describeIn list_rmd_chunks Returns a data frame with 4 columns:
+#'   the chunk type, the chunk label, the line number of the beginning of the chunk
+#'   and the line number of the end of the chunk.
+#' @family list_rmd_chunks
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#'
+#' @example tests/test.create_chunks.R
+list_rmd_chunks = function(text=readLines(file),file=NULL,
+                           chunk.start.pattern="^```[{](.*)[}] *$",
+                           chunk.end.pattern="^``` *$") {
+  starts = grep(chunk.start.pattern,text)
+  ends = grep(chunk.end.pattern,text)
+
+  if (length(starts) != length(ends) || any(starts>=ends))
+    stop("There seems to be a mismatch between chunk starts and chunk end.")
+
+  x = text[starts]
+  h = sub(chunk.start.pattern,"\\1",x)
+
+  chunk_type = sapply(strsplit(h," "),function(x) x[1])
+
+  h = trimws(sub("[^ ]+","",h)) # Remove chunk type
+
+  chunk_label = sapply(strsplit(h,","),function(x) x[1])
+  chunk_label = ifelse(grepl("=",chunk_label),"",chunk_label)
+  chunk_label = trimws(chunk_label,"both")
+
+  chunk_label[is.na(chunk_label)] = ""
+
+  res = data.frame(type=chunk_type,label=chunk_label,
+                   start=starts,end=ends)
+  return(res)
+}
+
+
+split_rmd_by_chunk = function(text=readLines(file),chunk_label,file=NULL,...) {
+  ch = list_rmd_chunks(text=text,...)
+
+  if (is.character(chunk_label))
+    chunk_label = which(ch$label==chunk_label)
+
+  x = ch[chunk_label,]
+
+  pre_chunk = text[1:(x$start-1)]
+  header = text[x$start]
+  content = text[(x$start+1):(x$end-1)]
+  tail = text[x$end]
+
+  post_chunk = NULL
+  if (x$end < length(text))
+    post_chunk = text[(x$end+1):length(text)]
+
+  return(list(pre_chunk=pre_chunk,header=header,content=content,
+              tail=tail,post_chunk=post_chunk))
 }
