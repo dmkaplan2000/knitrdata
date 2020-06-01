@@ -35,7 +35,9 @@ c,5.6
 ```
 ````
 
-This will load the CSV data in the chunk into the Rmarkdown R session under the variable name `d`. With appropriate options, `data` chunks can handle CSV data with arbitrary delimiters and white-space delimited data, essentially anything for which an appropriate "loader function" exists in R.
+This will load the CSV data in the chunk into the Rmarkdown R session under the variable name `d`. R chunks after this `data` chunk can use `d` as a normal R variable. 
+
+With appropriate options, `data` chunks can handle CSV data with arbitrary delimiters and white-space delimited data, essentially anything for which an appropriate "loader function" exists in R.
 
 One can achieve the same thing and much more using a chunk containing a binary RDS file:
 
@@ -48,7 +50,7 @@ PyDmA5lo/9kYDBy4obRYGhigG5eXmJsKM44JKshSnFmSCmWzp6TmAbmVEH1M/9Fs
 ```
 ````
 
-The contents of this chunk are the base64 encoding of a binary RDS file containing the data table above. The chunk header also includes an optional `md5sum` of the decoded chunk contents that is checked during processing to assure accuracy of the encoded data.
+The contents of this chunk are the base64 encoding of a binary RDS file containing the data table above. The chunk header also includes an optional `md5sum` of the decoded chunk contents that is checked during processing to assure accuracy of the encoded data. Again, with appropriate options, essentially any type of binary data can be loaded with `data` chunks.
 
 One can also use GPG to encrypt the chunk contents so that only users with the decryption key can have access to the data:
 
@@ -74,9 +76,9 @@ Zz8yfmCGaBcn/VNJdrpZTOxHNel/RLMiuHnkDaia/hdKVYs9ObnB6gIt9Q==
 ```
 ````
 
-`knitrdata` includes the `data_encode` and `create_chunk` helper functions to facilitate encoding of data and creation of `data` chunks, respectively.
+`knitrdata` includes the `data_encode`, `create_chunk` and `insert_chunk` helper functions to facilitate encoding of data, creation and insertion of `data` chunks, respectively.
 
-Chunks are not limited to scientific data, but can also include images, text and text documents. For example, the following would export the given BibTeX references to the file `references.bib`:
+`data` chunks are not limited to scientific data, but can also include images, text and text documents. For example, the following would export the given BibTeX references to the file `references.bib`:
 
 ````
 ```{data output.file="references.bib"}
@@ -121,6 +123,8 @@ If the following line is in the YAML header of the document:
 bibliography: references.bib
 ```
 
-Then the contents of this file will be used to generate citations and the bibliography of the document in the final formatting step of the knitting process. This can be done even if the file `references.bib` did not exist when the knitting process was initiated.
+then the contents of this file will be used to generate citations and the bibliography of the document in the final formatting step of the knitting process. This can be done even if the external file `references.bib` did not exist when the knitting process was initiated. This references `data` chunk can be placed anywhere in the Rmarkdown document, even after references have been cited in the text (e.g., the end of the document, which is often the most convenient place). 
+
+The same process can be used to embed all ancillary formatting files (e.g., LaTeX .cls style files, bibliography .csl syle files, CSS files, LaTeX header files) inside an Rmarkdown document using `data` chunks, obviating the need for external files.
 
 See package vignettes, documentation and examples for more details, including a full list of chunk options and more usage examples.
