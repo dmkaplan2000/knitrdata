@@ -747,7 +747,7 @@ Chunk option|Description
 `loader.function`|A function that will be passed (as the first argument) the name of a file containing the (potentially decoded) contents of the data chunk.
 `loader.ops`|A list of additional arguments to be passed to `loader.function`.
 `line.sep`|Only used when `encoding='"asis"'`. In this cases, specifies the character string that will be used to join the lines of the data chunk before further processing or returning them. Defaults to `'"\n"'`.
-`max.echo`|An integer specifying the maximum number of lines of data to echo in the final output document. Defaults to 20. If the document exceeds this length, only the first 20 lines will be shown and a final line indicating the number of ommitted lines will be added.
+`max.echo`|An integer specifying the maximum number of lines of data to echo in the final output document. Defaults to 20. If the data exceeds this length, only the first 20 lines will be shown and a final line indicating the number of ommitted lines will be added.
 ```
 
 ```{r knitrdatachunkops,echo=FALSE}
