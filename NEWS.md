@@ -1,3 +1,9 @@
+knitrdata 0.3.1
+---------------------------------------------------------------------
+
+- Added max.echo chunk option
+- Added script for testing of large data chunks
+
 knitrdata 0.3.0
 ---------------------------------------------------------------------
 
