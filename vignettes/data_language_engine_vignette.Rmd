@@ -675,7 +675,7 @@ One `knitrdata` feature that may at first glance seem to be of little value is t
 
 ## When not to use data chunks
 
-Though the `knitrdata` package can be a powerful tool, it can also be abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. The options to collapse `data` chunks in Rstudio, use Rstudio's navigation tools, use `knitrdata`'s helper functions for `data` chunk creation and the use of the `external.file` chunk option may reduce the importance of these issues in some cases, but including very large amounts of data in Rmarkdown documents is unlikely to be optimal. Basic prudence should be used when decided what and how much data to include in Rmarkdown documents.
+Though the `knitrdata` package can be a powerful tool, it can also be abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. The options to collapse `data` chunks in Rstudio, use Rstudio's navigation tools, use `knitrdata`'s helper functions for `data` chunk creation and the use of the `external.file` chunk option all can reduce the importance of these issues, but including very large amounts of data in Rmarkdown documents is unlikely to be optimal. In particular, Rstudio currently will not open a Rmarkdown documents larger than 5 MB in size, though larger documents can still be opened by other editors and rendering from the command line using `rmarkdown::render` is always possible. Basic prudence should be used when deciding what and how much data to include in Rmarkdown documents.
 
 ## Tips & tricks {#tt}
 
@@ -747,6 +747,7 @@ Chunk option|Description
 `loader.function`|A function that will be passed (as the first argument) the name of a file containing the (potentially decoded) contents of the data chunk.
 `loader.ops`|A list of additional arguments to be passed to `loader.function`.
 `line.sep`|Only used when `encoding='"asis"'`. In this cases, specifies the character string that will be used to join the lines of the data chunk before further processing or returning them. Defaults to `'"\n"'`.
+`max.echo`|An integer specifying the maximum number of lines of data to echo in the final output document. Defaults to 20. If the document exceeds this length, only the first 20 lines will be shown and a final line indicating the number of ommitted lines will be added.
 ```
 
 ```{r knitrdatachunkops,echo=FALSE}

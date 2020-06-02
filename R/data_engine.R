@@ -98,9 +98,15 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
 
   data = switch(
     encoding,
-    base64 =
+    base64 = {
+      if (is.null(options$linewidth))
+        options$linewidth = 64
+      if (is.null(options$newline))
+        options$newline = "\n"
+
       do.call(base64enc::base64encode,
-              c(what=file,options,linewidth=64,newline="\n")),
+              c(what=file,options))
+    },
     gpg = {
       if (!requireNamespace("gpg"))
         stop("gpg package must be installed and configured for encryption/decryption to work.")
@@ -207,6 +213,14 @@ eng_data = function(options) {
   if (!is.null(options$output.var))
     assign(options$output.var, data, envir = knitr::knit_global())
     #knitr::assign_knit_global(options$output.var,data) # Solution to avoid CRAN filters that needs to be implemented in knitr
+
+  # Reduce echo of long data
+  if (is.null(options$max.echo))
+    options$max.echo=20
+
+  if (length(code)>options$max.echo)
+    code = c(code[1:options$max.echo],
+             paste0("-- ",length(code)-options$max.echo," more lines of data ommitted --"))
 
   knitr::engine_output(options,code,output)
 }
