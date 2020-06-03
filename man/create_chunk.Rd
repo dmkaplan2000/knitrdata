@@ -75,7 +75,7 @@ including the chunk at the appropriate line number.
 \examples{
 # Test --------------
 library(knitrdata)
-library(tidyr) # For pipe operator
+library(magrittr) # For pipe operator
 
 # Create new Rmarkdown document
 if (file.exists("test.create_chunks.Rmd"))

@@ -12,6 +12,6 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/dmkaplan2000/knitrdata
 Imports: knitr, base64enc
-Suggests: gpg, rmarkdown
+Suggests: gpg, rmarkdown, magrittr
 RoxygenNote: 7.1.0
 VignetteBuilder: knitr

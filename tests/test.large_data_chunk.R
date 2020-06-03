@@ -12,7 +12,7 @@ saveRDS(d,rds.fn)
 
 # Create Rmarkdown doc --------------
 library(knitrdata)
-library(tidyr) # For pipe operator
+library(magrittr) # For pipe operator
 
 # Create new Rmarkdown document
 rmd.fn = "test.large_data_chunk.Rmd"

@@ -74,7 +74,7 @@ document broken into
 \examples{
 # Test --------------
 library(knitrdata)
-library(tidyr) # For pipe operator
+library(magrittr) # For pipe operator
 
 # Create new Rmarkdown document
 if (file.exists("test.create_chunks.Rmd"))
@@ -120,7 +120,7 @@ file.remove("test.create_chunks.Rmd","test.create_chunks.RDS",
 unlink("test.create_chunks_files",recursive=TRUE)
 # Test --------------
 library(knitrdata)
-library(tidyr) # For pipe operator
+library(magrittr) # For pipe operator
 
 # Create new Rmarkdown document
 if (file.exists("test.create_chunks.Rmd"))
