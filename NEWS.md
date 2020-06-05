@@ -3,6 +3,7 @@ knitrdata 0.3.1
 
 - Added max.echo chunk option
 - Added script for testing of large data chunks
+- Fix for global assignment issue based on persistent data
 
 knitrdata 0.3.0
 ---------------------------------------------------------------------
