@@ -706,30 +706,42 @@ v
 ```
 
 
-### Conditional text in Rmarkdown using knitrdata {#condtext}
+### Conditional text in Rmarkdown with missing values {#condtext}
 
-One realitively easy way to create Rmarkdown documents whose text depends on input parameters is using `knitrdata`. For example, one could create an input parameter in the YAML header:
+One way to create large amounts of text in an Rmarkdown document that is only included in the document if certain conditions are met is with the `asis` language engine. For example, if one create an input parameter in the YAML header of an Rmarkdown document:
 
 ```{r eval=FALSE}
 params:
   cond: TRUE
 ```
 
-And then one could include content in the document based on this parameter as follows:
+Then one could include content in the document based on this parameter as follows:
+
+````markdown
+`r ''````{asis eval=params$cond}
+# A conditional section
+
+This **will not** be evaluated: $5+4=`r 4+5`$
+`r ''````
+````
+
+This will add a section and a paragraph with one sentence. One disadvantage of this approach is that the content of an `asis` chunk is never evaluated so one cannot use inline R code. 
+
+This limitation can be overcome with `knitrdata` by pushing the content of the chunk into a text variable with conversion specifications that can be replaced using the `sprintf` function. For example, placing the following in the document:
 
 ````markdown
 `r ''````{data include=FALSE,output.var="cond_text"}
 # A conditional section
 
-Some conditional text.
+This **will** be evaluated: $5+4=%d$
 `r ''````
 
 `r ''````{r results='asis',echo=FALSE,eval=params$cond}
-cat(cond_text)
+cat(sprintf(cond_text,5+4))
 `r ''````
 ````
 
-This will add **A conditional section** and its contents only if `params$cond=TRUE`. There are other methods to achieve this, but this method is reasonably straightforward with low overhead. One disadvantage to this approach is that one cannot use inline R code or R code chunks within the text as this code will never be processed by `knitr`. This weakness can, however, be overcome by placing markers for dynamic elements and replacing them using `sprintf` or similar before outputing the text to the document.
+Will lead to `%d` being replaced with `9`.
 
 ## Full list of data chunk options
 

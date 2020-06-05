@@ -210,9 +210,11 @@ eng_data = function(options) {
   }
 
   # Assign to output.var
-  if (!is.null(options$output.var))
-    assign(options$output.var, data, envir = knitr::knit_global())
+  if (!is.null(options$output.var)) {
+    assign(options$output.var, data, envir = .knitrdata_env())
+    #assign(options$output.var, data, envir = knitr::knit_global())
     #knitr::assign_knit_global(options$output.var,data) # Solution to avoid CRAN filters that needs to be implemented in knitr
+  }
 
   # Reduce echo of long data
   if (is.null(options$max.echo))
@@ -223,16 +225,4 @@ eng_data = function(options) {
              paste0("-- ",length(code)-options$max.echo," more lines of data ommitted --"))
 
   knitr::engine_output(options,code,output)
-}
-
-# Loader/Unloader functions ----------------------------------------------
-
-# Activate data language engine for use in Rmarkdown documents
-.onLoad = function(libname,pkgname) {
-  knitr::knit_engines$set(data=eng_data)
-}
-
-# Remove data language engine on package unload
-.onUnload = function(libname,pkgname) {
-  knitr::knit_engines$delete("data")
 }
