@@ -592,7 +592,7 @@ rmarkdown::draft("example.Rmd","github_document","rmarkdown",
 ```
 
 ```{r}
-library(tidyr) # For pipe operator
+library(magrittr) # For pipe operator
 
 chunk = data_encode("test.RDS","base64") %>%
   create_chunk(chunk_label="mydata",output.var="d",format="binary",echo=FALSE,
@@ -671,7 +671,7 @@ There are many potential scenarios where including data inside Rmarkdown documen
 
 `knitrdata` also has uses in cases where the objective is not necessarily to render a document fully standalone. One can use it as a convenient way to input small data tables and data vectors (e.g., see [Numeric vector data](#vectdata) below) into an Rmarkdown document. For example, the `data` chunk syntax combined with CSV data may be simpler and cleaner than creating a `data.frame` or `tibble` directly in R code. Furthermore, though markdown allows one to create small tables by hand, it is difficult or impossible to reproduce the sophisticated tables that `knitr::kable` and `kableExtra` are capable of creating, and tables created in markdown may not *float* as other tables do, potentially an issue for producing scientific publications with Rmarkdown. `knitrdata` can be used as a simple way to input these tables into R, which can then be used as input to `kable` and other tools. Finally, `data` chunks provide a convenient system for making certain Rmarkdown document text conditional on parameter values or results (see [Conditional text in Rmarkdown using knitrdata](#condtext)).
 
-One `knitrdata` feature that may at first glance seem to be of little value is the possibility to `gpg` encrypt data chunks. Why would one want to encrypt just the data when one can encrypt the entire Rmarkdown document? However, there are many cases where the data themselves are confidential (e.g., economically important data, confidential medical information), but the methods used to analyze and synthesize those data can and should be publicly available. Furthermore, it is increasingly common to share code and documents on public collaboration websites, such as [github](www.github.com) or [slack](www.slack.com), but one may not have sufficient confidence in the privacy protections of these websites to give them access to the data themselves.  
+One `knitrdata` feature that may at first glance seem to be of little value is the possibility to `gpg` encrypt data chunks. Why would one want to encrypt just the data when one can encrypt the entire Rmarkdown document? However, there are many cases where the data themselves are confidential (e.g., economically important data, confidential medical information), but the methods used to analyze and synthesize those data can and should be publicly available. Furthermore, it is increasingly common to share code and documents on public collaboration websites, such as [github](https://www.github.com) or [slack](https://www.slack.com), but one may not have sufficient confidence in the privacy protections of these websites to give them access to the data themselves.  
 
 ## When not to use data chunks
 
