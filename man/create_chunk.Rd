@@ -73,6 +73,11 @@ including the chunk at the appropriate line number.
 }}
 
 \examples{
+# Use a temporary directory ----------------------------
+owd = getwd()
+td = tempdir(check=TRUE)
+setwd(td)
+
 # Test --------------
 library(knitrdata)
 library(magrittr) # For pipe operator
@@ -119,6 +124,8 @@ rmarkdown::render("test.create_chunks.Rmd")
 file.remove("test.create_chunks.Rmd","test.create_chunks.RDS",
             "test.create_chunks.md","test.create_chunks.html")
 unlink("test.create_chunks_files",recursive=TRUE)
+
+setwd(owd)
 }
 \author{
 David M. Kaplan \email{dmkaplan2000@gmail.com}

@@ -1,3 +1,9 @@
+# Use a temporary directory ----------------------------
+owd = getwd()
+td = tempdir(check=TRUE)
+setwd(td)
+
+# Do some data encoding and decoding ------------------
 library(knitrdata)
 
 x = data.frame(a=1:5,b=letters[1:5])
@@ -25,4 +31,7 @@ if (requireNamespace("gpg") && params$run_gpg) {
   gpg::gpg_delete(k,secret=TRUE)
 }
 
+# Cleanup ------------------------------------
 file.remove("test.csv","test.RDS","test_output.RDS")
+
+setwd(owd)

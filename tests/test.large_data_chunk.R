@@ -1,3 +1,8 @@
+# Use a temporary directory ----------------------------
+owd = getwd()
+td = tempdir(check=TRUE)
+setwd(td)
+
 # Create lots of data to insert into doc ------------------
 x = runif(3e5)
 y = 4*x + 3 + rnorm(3e5)
@@ -63,3 +68,5 @@ system.time(
 file.remove(rmd.fn,rds.fn,
             sub("[.][^.]+$",".md",rmd.fn),sub("[.][^.]+$",".html",rmd.fn))
 unlink(sub("[.][^.]+$","_files",rmd.fn),recursive=TRUE)
+
+setwd(owd)

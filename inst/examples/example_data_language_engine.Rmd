@@ -19,6 +19,14 @@ if (!requireNamespace("knitrdata")) {
 library(knitrdata) # load package
 ```
 
+## Change doc root for CRAN
+
+CRAN requires that all package code writes to a temporary directory, so I am changing the document root to the temporary directory. In a real example, one would almost certainly not do this.
+
+```{r}
+knitr::opts_knit$set(root.dir = tempdir(check=TRUE))
+```
+
 ## Conceptual overview
 
 Sometimes it would be useful to make completely standalone Rmarkdown documents that do not depend on data in external files. One important example of this is scientific publications written in Rmarkdown for which we often would like to supply the source document with data to ensure results are reproducible.
@@ -337,7 +345,7 @@ cat(ext)
 
 Though the `knitrdata` package can be a powerful tool, it can also be easily abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. To avoid this, it is recommended that data files exceeding ~1 MB not be included in Rmarkdown documents, though there is no formal limit on the size of data chunks.
 
-```{r}
+```{r eval=TRUE}
 # Clean up test files
 file.remove("test.csv","key","test_external.txt","test_output.RDS",
             "test_output2.RDS","test.RDS.base64","test.RDS")

@@ -18,6 +18,10 @@ knitr::opts_chunk$set(
 )
 
 library(knitrdata) # load package
+
+# Change document root to not write to user or package space
+td = tempdir(check=TRUE)
+knitr::opts_knit$set(root.dir = td)
 ```
 
 This document provides a brief introduction to how to use the `knitrdata` package to create standalone Rmarkdown documents. For examples of Rmarkdown documents using the package, please consult the `examples` directory provided with the package. 
@@ -764,12 +768,5 @@ Chunk option|Description
 
 ```{r knitrdatachunkops,echo=FALSE}
 knitr::kable(t,caption="Full list of knitrdata chunk options.")
-```
-
-<!-- Cleanup -->
-```{r remove_temp_files,include=FALSE,message=FALSE}
-file.remove("test_external.txt","test.RDS.base64","test_output2.RDS",
-            "key","test_output.RDS","test.RDS","test.csv",
-            "example.Rmd","example_with_data_chunk.Rmd")
 ```
 
