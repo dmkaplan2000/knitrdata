@@ -13,7 +13,7 @@
 #' text-encoded data back into its original binary or text format (\code{data_decode}).
 #'
 #' Encoding and decoding in \code{base64} format uses functionality from the
-#' \code{\link[base64enc:base64encode]{base64enc}} package, whereas encoding and decoding using \code{gpg}
+#' \code{\link[base64enc:base64]{base64enc}} package, whereas encoding and decoding using \code{gpg}
 #' uses functionality from the \code{\link[gpg:gpg_encrypt]{gpg}} package. See those packages for more
 #' details on the encoding and decoding process and setting up a \code{gpg} keyring.
 #'
@@ -32,7 +32,7 @@
 #' For both functions, the \code{options} input argument takes a list of
 #' additional input arguments that are passed directly to the encoding
 #' or decoding functions in the respective packages that handle the actual
-#' data translation. See \code{\link[base64enc]{base64encode}} and
+#' data translation. See \code{\link[base64enc:base64]{base64encode}} and
 #' \code{\link[gpg]{gpg_encrypt}} for details.
 #'
 #' For \code{gpg} encoding and decoding, in addition to installing the
@@ -50,7 +50,7 @@
 #' @param output Path where encoded data is to be stored. Optional; if \code{NULL} then
 #'   encoded data will not be written to a file.
 #' @param options A list containing extra argument for the encoding/decoding functions.
-#'   See \code{\link[base64enc]{base64encode}} and \code{\link[gpg]{gpg_encrypt}}
+#'   See \code{\link[base64enc:base64]{base64encode}} and \code{\link[gpg]{gpg_encrypt}}
 #'   for details and the description below for required options for \code{gpg}
 #'   encryption.
 #'
@@ -61,6 +61,7 @@
 #'   string (\code{as_text=TRUE}) or raw vector (\code{as_text=FALSE}).
 #' @family decode encode
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @seealso See also \code{\link[base64enc:base64]{base64encode}} and \code{\link[gpg]{gpg_encrypt}}.
 #'
 #' @example tests/test.data_encode_decode.R
 data_decode = function(data,encoding,as_text=FALSE,options=list()) {

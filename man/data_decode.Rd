@@ -18,7 +18,7 @@ data_encode(file, encoding, options = list(), output = NULL)
 (\code{TRUE}) or binary (\code{FALSE}). Defaults to \code{FALSE}, meaning binary.}
 
 \item{options}{A list containing extra argument for the encoding/decoding functions.
-See \code{\link[base64enc]{base64encode}} and \code{\link[gpg]{gpg_encrypt}}
+See \code{\link[base64enc:base64]{base64encode}} and \code{\link[gpg]{gpg_encrypt}}
 for details and the description below for required options for \code{gpg}
 encryption.}
 
@@ -37,7 +37,7 @@ text-encoded data back into its original binary or text format (\code{data_decod
 }
 \details{
 Encoding and decoding in \code{base64} format uses functionality from the
-\code{\link[base64enc:base64encode]{base64enc}} package, whereas encoding and decoding using \code{gpg}
+\code{\link[base64enc:base64]{base64enc}} package, whereas encoding and decoding using \code{gpg}
 uses functionality from the \code{\link[gpg:gpg_encrypt]{gpg}} package. See those packages for more
 details on the encoding and decoding process and setting up a \code{gpg} keyring.
 
@@ -56,7 +56,7 @@ of decoded binary data (if \code{as_text=FALSE}).
 For both functions, the \code{options} input argument takes a list of
 additional input arguments that are passed directly to the encoding
 or decoding functions in the respective packages that handle the actual
-data translation. See \code{\link[base64enc]{base64encode}} and
+data translation. See \code{\link[base64enc:base64]{base64encode}} and
 \code{\link[gpg]{gpg_encrypt}} for details.
 
 For \code{gpg} encoding and decoding, in addition to installing the
@@ -113,6 +113,9 @@ if (requireNamespace("gpg") && params$run_gpg) {
 file.remove("test.csv","test.RDS","test_output.RDS")
 
 setwd(owd)
+}
+\seealso{
+See also \code{\link[base64enc:base64]{base64encode}} and \code{\link[gpg]{gpg_encrypt}}.
 }
 \author{
 David M. Kaplan \email{dmkaplan2000@gmail.com}
