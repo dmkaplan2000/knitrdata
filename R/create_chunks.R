@@ -78,7 +78,7 @@ create_chunk = function(text=readLines(file),
 
 #' @export
 #'
-#' @describeIn create_chunk Invisibly returns the contents of the modified Rmarkdown
+#' @describeIn create_chunk Invisibly returns the contents of the modified Rmarkdown text
 #'   as a character vector with each line in an element of the vector
 #'   including the chunk at the appropriate line number.
 insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
