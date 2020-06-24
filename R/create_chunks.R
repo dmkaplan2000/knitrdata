@@ -144,6 +144,11 @@ list_rmd_chunks = function(text=readLines(file),file=NULL,
                            chunk.end.pattern="^``` *$") {
   starts = grep(chunk.start.pattern,text)
 
+  if (length(starts) < 1) {
+    warning("No chunks found.")
+    return(NULL)
+  }
+
   # more robust search for endings that should work even if some
   # code chunks lack curly braces
   ends = c()
