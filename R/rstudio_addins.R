@@ -3,6 +3,32 @@
 isemp = function(x) is.null(x) || (x=="")
 
 # Function for creating a data chunk --------------------
+
+#' Invoke Shiny gadget to create a data chunk
+#'
+#' As different elements of the data chunk are specified, other options will be modified
+#' as is likely to be useful. For example, if a binary file is uploaded, then the \code{format}
+#' will be set to \code{binary}, the \code{encoding} will be set to \code{base64} and the
+#' \code{Encode data?} option will be checked. If these options are not appropriate, then they can
+#' be altered afterwards.
+#'
+#' When the \code{Create chunk} button is clicked, the function will return the chunk contents
+#' including header and tail.
+#'
+#' @param title Text to place in title bar of gadget.
+#'
+#' @return Invisibly returns the text of the data chunk as a character vector, one line per element.
+#'
+#' @examples
+#' \dontrun{
+#' create_data_chunk_dialog()
+#' }
+#'
+#' @export
+#'
+#' @family Chunk tools
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @encoding UTF-8
 create_data_chunk_dialog = function (title="Data chunk creator") {
   if (!requireNamespace("shiny",quietly=TRUE) || !requireNamespace("miniUI",quietly=TRUE))
     stop("This function requires that the shiny and miniUI packages be installed. Please install them before running.")
@@ -162,6 +188,33 @@ create_data_chunk_dialog = function (title="Data chunk creator") {
 }
 
 # Insert data chunk ------------------------------
+#' Invoke Rstudio addin to insert a data chunk in active source document
+#'
+#' As different elements of the data chunk are specified, other options will be modified
+#' as is likely to be useful. For example, if a binary file is uploaded, then the \code{format}
+#' will be set to \code{binary}, the \code{encoding} will be set to \code{base64} and the
+#' \code{Encode data?} option will be checked. If these options are not appropriate, then they can
+#' be altered afterwards.
+#'
+#' When the \code{Create chunk} button is clicked, the contents of the data chunk will be inserted
+#' at the current cursor location of the active source document in the Rstudio editor.
+#'
+#' @param title Text to place in title bar of gadget.
+#' @param chunk Text content of the data chunk. If not given (as is typically the case), the
+#'   \code{\link{create_data_chunk_dialog}} will be used to generate chunk contents.
+#'
+#' @return Returns \code{TRUE} if a chunk was inserted, \code{FALSE} otherwise.
+#'
+#' @examples
+#' \dontrun{
+#' insert_data_chunk_dialog()
+#' }
+#'
+#' @export
+#'
+#' @family Chunk tools
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @encoding UTF-8
 insert_data_chunk_dialog = function (title="Data chunk inserter",
                                      chunk = create_data_chunk_dialog(title=title)) {
   if (!requireNamespace("rstudioapi",quietly=TRUE))
@@ -172,7 +225,7 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
   if (is.null(chunk))
     return(FALSE)
 
-  ln = context$selection[[1]]$range$start["row"]
+  ln = as.integer(context$selection[[1]]$range$start["row"])
 
   txt = insert_chunk(
     chunk = chunk,
@@ -181,14 +234,40 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
   )
 
   rstudioapi::setDocumentContents(paste(txt,collapse="\n"),context$id)
-  rstudioapi::setCursorPosition(
-    rstudioapi::document_position(ln,1),
-    context$id)
+
+  # # Set position - causes errors for some unknown reason
+  # rstudioapi::setCursorPosition(
+  #   rstudioapi::document_position(ln,1),
+  #   context$id)
 
   return(TRUE)
 }
 
 # Remove chunks ------------------------------
+
+#' Invoke Rstudio addin to remove chunks from the active source document
+#'
+#' The dialog will present a data table list of chunks in the source document. Select the rows
+#' that correspond to the chunks that you wish to remove and hit the \code{Remove chunks} button
+#' to remove them.
+#'
+#' When the dialog is started, if the cursor is positioned inside a chunk in the source document,
+#' then the row corresponding to this chunk will be selected by default.
+#'
+#' @param title Text to place in title bar of gadget.
+#'
+#' @return Returns \code{TRUE} if one or more chunks were removed, \code{FALSE} otherwise.
+#'
+#' @examples
+#' \dontrun{
+#' remove_chunks_dialog()
+#' }
+#'
+#' @export
+#'
+#' @family Chunk tools
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @encoding UTF-8
 remove_chunks_dialog = function (title="Eliminate (data) chunks") {
   if (!requireNamespace("shiny",quietly=TRUE) || !requireNamespace("miniUI",quietly=TRUE) ||
       !requireNamespace("DT",quietly=TRUE) || !requireNamespace("rstudioapi",quietly=TRUE))
@@ -198,8 +277,8 @@ remove_chunks_dialog = function (title="Eliminate (data) chunks") {
     miniUI::gadgetTitleBar(title,left = miniUI::miniTitleBarCancelButton(),
                            right = miniUI::miniTitleBarButton("done", "Remove chunks", primary = TRUE)),
     miniUI::miniContentPanel(
-      verbatimTextOutput('actdoc'),
-      hr(),
+      shiny::h3(shiny::textOutput('actdoc')),
+      shiny::hr(),
       DT::dataTableOutput('chunklist')
     )
   )
@@ -207,7 +286,7 @@ remove_chunks_dialog = function (title="Eliminate (data) chunks") {
   server <- function(input, output, session) {
     context = rstudioapi::getSourceEditorContext()
 
-    output$actdoc = renderPrint(paste0("Active document: ",context$path))
+    output$actdoc = shiny::renderText(paste0("Active document: ",context$path))
 
     chunks = list_rmd_chunks(context$contents)
     rv = shiny::reactiveValues(chunks = chunks)
@@ -216,14 +295,14 @@ remove_chunks_dialog = function (title="Eliminate (data) chunks") {
     se = c(context$selection[[1]]$range$start["row"],
            context$selection[[1]]$range$end["row"])
 
-    row = which(chunks$start <= se[1] & se[2] <= chunks$end)
+    row = which(chunks$start <= se[2] & se[1] <= chunks$end)
 
     if (length(row) > 0) {
       proxy = DT::dataTableProxy("chunklist",session)
-      DT::selectRows(proxy,row)
+      DT::selectRows(proxy,selected=row)
     }
 
-    # When data file set, determine defaults
+    # render data table when list of chunks changed
     shiny::observeEvent(rv$chunks,{
       output$chunklist = DT::renderDataTable(rv$chunks,server=FALSE)
     })
@@ -231,20 +310,24 @@ remove_chunks_dialog = function (title="Eliminate (data) chunks") {
     shiny::observeEvent(input$done, {
       rows = input$chunklist_rows_selected
 
-      if (!is.null(rows) && length(rows)>0) {
-        contents = context$contents
-        chunks = rv$chunks[rows,]
+      if(is.null(rows) || length(rows)==0)
+        shiny::stopApp(FALSE)
 
-        # Get full list of line numbers to remove
-        se = as.data.frame(t(chunks[,c("start","end"),drop=FALSE]))
-        lns = do.call(c,lapply(se,function(x) x[1]:x[2]))
+      contents = context$contents
+      chunks = rv$chunks[rows,]
 
-        # Remove rows
-        contents = contents[-1*lns]
+      # Get full list of line numbers to remove
+      se = as.data.frame(t(chunks[,c("start","end"),drop=FALSE]))
+      lns = do.call(c,lapply(se,function(x) x[1]:x[2]))
 
-        # Put into document
-        rstudioapi::setDocumentContents(paste(contents,collapse="\n"),context$id)
-      }
+      # Remove rows
+      contents = contents[-1*lns]
+
+      # Put into document
+      rstudioapi::setDocumentContents(paste(contents,collapse="\n"),context$id)
+      rstudioapi::setCursorPosition(
+        rstudioapi::document_position(min(lns)-1,1),
+        context$id)
 
       shiny::stopApp(TRUE)
     })
@@ -261,7 +344,3 @@ remove_chunks_dialog = function (title="Eliminate (data) chunks") {
 
   invisible(res)
 }
-
-
-# Export chunk contents ---------------------
-

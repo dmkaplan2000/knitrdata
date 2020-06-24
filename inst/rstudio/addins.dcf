@@ -1,0 +1,10 @@
+Name: Insert data chunk
+Description: Create & inserts a data chunk in active source document
+Binding: insert_data_chunk_dialog
+Interactive: true
+
+Name: Remove chunks
+Description: Remove entire chunks from the active source document
+Binding: remove_chunks_dialog
+Interactive: true
+

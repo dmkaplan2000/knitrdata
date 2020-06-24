@@ -127,7 +127,14 @@ unlink("test.create_chunks_files",recursive=TRUE)
 
 setwd(owd)
 }
+\seealso{
+Other Chunk tools: 
+\code{\link{create_data_chunk_dialog}()},
+\code{\link{insert_data_chunk_dialog}()},
+\code{\link{list_rmd_chunks}()},
+\code{\link{remove_chunks_dialog}()}
+}
 \author{
 David M. Kaplan \email{dmkaplan2000@gmail.com}
 }
-\concept{create_chunks}
+\concept{Chunk tools}
