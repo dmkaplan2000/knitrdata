@@ -16,6 +16,7 @@ isemp = function(x) is.null(x) || (x=="")
 #' including header and tail.
 #'
 #' @param title Text to place in title bar of gadget.
+#' @param infobar Text to place in information bar at top of gadget
 #'
 #' @return Invisibly returns the text of the data chunk as a character vector, one line per element.
 #'
@@ -29,7 +30,8 @@ isemp = function(x) is.null(x) || (x=="")
 #' @family Chunk tools
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #' @encoding UTF-8
-create_data_chunk_dialog = function (title="Data chunk creator") {
+create_data_chunk_dialog = function (title="Data chunk creator",
+                                     infobar="Fill out  click above to create chunk") {
   if (!requireNamespace("shiny",quietly=TRUE) || !requireNamespace("miniUI",quietly=TRUE))
     stop("This function requires that the shiny and miniUI packages be installed. Please install them before running.")
 
@@ -37,6 +39,8 @@ create_data_chunk_dialog = function (title="Data chunk creator") {
     miniUI::gadgetTitleBar(title,left = miniUI::miniTitleBarCancelButton(),
                    right = miniUI::miniTitleBarButton("done", "Create chunk", primary = TRUE)),
     miniUI::miniContentPanel(
+      shiny::h3(shiny::textOutput('infobar')),
+      shiny::hr(),
       shiny::fileInput("filename","Data file: "),
       shiny::textInput("chunk_label","Chunk label: ",placeholder="mydatachunk",width="100%"),
       shiny::fillRow(
@@ -62,6 +66,8 @@ create_data_chunk_dialog = function (title="Data chunk creator") {
 
   server <- function(input, output, session) {
     rv = shiny::reactiveValues(makechunk=FALSE)
+
+    output$infobar = shiny::renderText(infobar)
 
     # When data file set, determine defaults
     shiny::observeEvent(input$filename,{
@@ -216,14 +222,17 @@ create_data_chunk_dialog = function (title="Data chunk creator") {
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #' @encoding UTF-8
 insert_data_chunk_dialog = function (title="Data chunk inserter",
-                                     chunk = create_data_chunk_dialog(title=title)) {
+                                     chunk = NULL) {
   if (!requireNamespace("rstudioapi",quietly=TRUE))
     stop("The rstudioapi package must be installed to use this function.")
 
   context = rstudioapi::getSourceEditorContext()
+  infobar = paste0("Active document: ",ifelse(isemp(context$path),"<<UNKNOWN>>",context$path))
+
+  chunk = create_data_chunk_dialog(title=title,infobar=infobar)
 
   if (is.null(chunk))
-    return(FALSE)
+    invisible(FALSE)
 
   ln = as.integer(context$selection[[1]]$range$start["row"])
 
@@ -235,12 +244,21 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
 
   rstudioapi::setDocumentContents(paste(txt,collapse="\n"),context$id)
 
-  # # Set position - causes errors for some unknown reason
-  # rstudioapi::setCursorPosition(
-  #   rstudioapi::document_position(ln,1),
-  #   context$id)
 
-  return(TRUE)
+  Sys.sleep(4)
+
+  cat("line ",ln,"\n")
+  cat(file=stderr(),"line ",ln,"\n")
+
+  # Set position - causes errors for some unknown reason
+  rstudioapi::setCursorPosition(
+    rstudioapi::document_position(ln,1),
+    context$id)
+
+  cat("line ",ln,"\n")
+  cat(file=stderr(),"line ",ln,"\n")
+
+  return("test")
 }
 
 # Remove chunks ------------------------------

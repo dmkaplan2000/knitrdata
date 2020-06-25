@@ -5,10 +5,7 @@
 \alias{insert_data_chunk_dialog}
 \title{Invoke Rstudio addin to insert a data chunk in active source document}
 \usage{
-insert_data_chunk_dialog(
-  title = "Data chunk inserter",
-  chunk = create_data_chunk_dialog(title = title)
-)
+insert_data_chunk_dialog(title = "Data chunk inserter", chunk = NULL)
 }
 \arguments{
 \item{title}{Text to place in title bar of gadget.}
