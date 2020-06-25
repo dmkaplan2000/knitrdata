@@ -8,11 +8,18 @@ The detailed functioning of the package is described in a vignette accompanying 
 
 ## Installation & Use
 
-This package can be installed from Github executing the
+The latest version of this package can be installed from Github executing the
 following command in R:
 
 ```r
 remotes::install_github("dmkaplan2000/knitrdata",build_vignettes=TRUE)
+```
+
+A recent version of this package can also be installed from
+[CRAN](https://cran.r-project.org/package=knitrdata):
+
+```r
+install.packages("knitrdata")
 ```
 
 To use the package, load the library in the `setup` chunk
