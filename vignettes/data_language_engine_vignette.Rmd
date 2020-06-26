@@ -669,6 +669,24 @@ Content will be ignored with a warning!
 cat(ext)
 ```
 
+## Rstudio Addins for working with data chunks
+
+The steps described above for encoding data, creating data chunks and inserting them in Rmarkdown documents have been combined into a set of  `Shiny` applications:
+
+* `create_data_chunk_dialog()` for creating a data chunk and returning it to the command line after the user specifies a data file and a set of options in the `Shiny` gadget
+* `insert_data_chunk_dialog()`, which has the same functionality as `create_data_chunk_dialog()`, except that the data chunk that is created is inserted at the cursor location in the active source document in the Rstudio editor
+* `remove_chunks_dialog()`, which shows a data table listing all chunks in the active source document in the Rstudio editor, allowing one to select a set of chunks (i.e., rows) and then delete those chunks with the click of a button
+
+The last two of these, `insert_data_chunk_dialog()` and `remove_chunks_dialog()`, are accessible in the Rstudio Addins menu under the `knitrdata` heading with titles `Insert data chunk` and `Remove chunks`, respectively.
+
+Before using these tools, first install all the additional packages suggested by `knitrdata`: `shiny`, `miniUI`, `DT`, `rstudioapi`.
+
+The use of these tools is generally self explanatory. The chunk creation apps ask for the name of the data file to be incorporated into the chunk, as well as a standard set of other chunk options, such as data format and encoding and output options. The app will attempt to suggest sensible options based on the input data file, though these can be changed afterward. For example, if a binary file is selected, then the format and encoding options will be set to `binary` and `base64` respectively. GPG encoding of data using the app is not currently supported. By default, `md5sum` checks of all data chunks will be included.
+
+The chunk removal app present a searchible list of all chunks in the source document. To eliminate a set of chunks, one just selects the corresponding rows and clicks the `Remove chunks` button.
+
+Note that these tools do not try to determine if the active source document is a Rmarkdown document. If undesired changes are made to a document, then one can undo (`ctrl-z`) those changes afterward.
+
 ## Use cases
 
 There are many potential scenarios where including data inside Rmarkdown documents can be useful. The most obvious is to render a document fully standalone, perhaps for creating a single document that reproduces an entire publication or report or to make life as simple as possible for collaborators that are not comfortable managing complex Rmarkdown documents requiring multiple files. To do this, one would place not only data inside chunks in the Rmarkdown document, but also ancillary files associated with the document, such as CSS, LaTeX and CSL (bibliography) style files, and BibTeX files. These latter chunks would typically recreate these external files using the `output.file` chunk option.
