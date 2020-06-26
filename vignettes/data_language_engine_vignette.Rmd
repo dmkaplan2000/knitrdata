@@ -6,7 +6,7 @@ output: rmarkdown::html_vignette
 params:
   run_gpg: FALSE
 vignette: >
-  %\VignetteIndexEntry{Standalone Rmarkdown documents with the data language engine}
+  %\VignetteIndexEntry{Building standalone Rmarkdown documents using the data language engine}
   %\VignetteEngine{knitr::rmarkdown_notangle}
   %\VignetteEncoding{UTF-8}
 ---
