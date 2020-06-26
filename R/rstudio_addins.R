@@ -229,12 +229,13 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
   context = rstudioapi::getSourceEditorContext()
   infobar = paste0("Active document: ",ifelse(isemp(context$path),"<<UNKNOWN>>",context$path))
 
-  chunk = create_data_chunk_dialog(title=title,infobar=infobar)
+  if (is.null(chunk))
+    chunk = create_data_chunk_dialog(title=title,infobar=infobar)
 
   if (is.null(chunk))
     invisible(FALSE)
 
-  ln = as.integer(context$selection[[1]]$range$start["row"])
+  ln = context$selection[[1]]$range$start["row"]
 
   txt = insert_chunk(
     chunk = chunk,
@@ -244,16 +245,12 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
 
   rstudioapi::setDocumentContents(paste(txt,collapse="\n"),context$id)
 
-  cat("line ",ln,"\n")
-
-  # Set position - causes errors for some unknown reason
+  # Set position - sometimes causes errors for some unknown reason
   rstudioapi::setCursorPosition(
     rstudioapi::document_position(ln,1),
     context$id)
 
-  cat("line ",ln,"\n")
-
-  return("test")
+  invisible(TRUE)
 }
 
 # Remove chunks ------------------------------
