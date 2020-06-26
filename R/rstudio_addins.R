@@ -244,11 +244,7 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
 
   rstudioapi::setDocumentContents(paste(txt,collapse="\n"),context$id)
 
-
-  Sys.sleep(4)
-
   cat("line ",ln,"\n")
-  cat(file=stderr(),"line ",ln,"\n")
 
   # Set position - causes errors for some unknown reason
   rstudioapi::setCursorPosition(
@@ -256,7 +252,6 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
     context$id)
 
   cat("line ",ln,"\n")
-  cat(file=stderr(),"line ",ln,"\n")
 
   return("test")
 }
