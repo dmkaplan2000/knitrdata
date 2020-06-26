@@ -32,8 +32,10 @@ isemp = function(x) is.null(x) || (x=="")
 #' @encoding UTF-8
 create_data_chunk_dialog = function (title="Data chunk creator",
                                      infobar="Fill out  click above to create chunk") {
-  if (!requireNamespace("shiny",quietly=TRUE) || !requireNamespace("miniUI",quietly=TRUE))
-    stop("This function requires that the shiny and miniUI packages be installed. Please install them before running.")
+  pkgs = c("shiny","miniUI")#,"DT")
+  if (!all(sapply(pkgs,requireNamespace,quietly=TRUE)))
+    stop("This function requires that the following packages be installed: ",
+         paste(pkgs,collapse=", "))
 
   ui <- miniUI::miniPage(
     miniUI::gadgetTitleBar(title,left = miniUI::miniTitleBarCancelButton(),
@@ -45,9 +47,10 @@ create_data_chunk_dialog = function (title="Data chunk creator",
       shiny::textInput("chunk_label","Chunk label: ",placeholder="mydatachunk",width="100%"),
       shiny::fillRow(
         height="40pt",
-        shiny::checkboxGroupInput("format","Format: ",choices=c("text","binary"),selected="binary",inline=TRUE),
-        shiny::checkboxGroupInput("encoding","Encoding: ",choices=c("asis","base64"),select="base64",inline=TRUE)
+        shiny::radioButtons("format","Format: ",choices=c("text","binary"),selected="binary",inline=TRUE),
+        shiny::radioButtons("encoding","Encoding: ",choices=c("asis","base64","gpg"),select="base64",inline=TRUE)
       ),
+      shiny::uiOutput("gpg_receivers"),
       shiny::fillRow(
         height="40pt",
         shiny::checkboxInput("md5sum","Do MD5 sum check? ",value=TRUE),
@@ -69,6 +72,32 @@ create_data_chunk_dialog = function (title="Data chunk creator",
 
     output$infobar = shiny::renderText(infobar)
 
+    # Add receivers list if GPG chosen
+    shiny::observeEvent(input$encoding,{
+      switch(
+        input$encoding,
+        "gpg" = {
+          # If gpg not installed warned and return to encoding=base64
+          if (!requireNamespace("gpg")) {
+            shiny::showModal(shiny::modalDialog("gpg package required for gpg encoding."))
+            shiny::updateRadioButtons(session,"encoding",selected="base64")
+            return()
+          }
+
+          keys = gpg::gpg_list_keys()
+          output$gpg_receivers = shiny::renderUI(
+            #DT::dataTableOutput("keys")
+            selectInput("keys","GPG receivers: ",paste(keys$id,keys$name),multiple=TRUE)
+          )
+          #rv$keys = gpg::gpg_list_keys()[c("id","fingerprint","name","email")]
+          #output$keys = DT::renderDataTable(rv$keys,server=FALSE)
+        },
+        {
+          output$gpg_receivers = shiny::renderUI("")
+        }
+      )
+    })
+
     # When data file set, determine defaults
     shiny::observeEvent(input$filename,{
       fn = input$filename$datapath
@@ -76,8 +105,8 @@ create_data_chunk_dialog = function (title="Data chunk creator",
       isbin = is.file.binary(fn)
       fnext = tolower(tools::file_ext(fn))
 
-      shiny::updateCheckboxGroupInput(session,"format",selected=ifelse(isbin,"binary","text"))
-      shiny::updateCheckboxGroupInput(session,"encoding",selected=ifelse(isbin,"base64","asis"))
+      shiny::updateRadioButtons(session,"format",selected=ifelse(isbin,"binary","text"))
+      shiny::updateRadioButtons(session,"encoding",selected=ifelse(isbin,"base64","asis"))
       shiny::updateCheckboxInput(session,"encode",value=isbin)
       shiny::updateTextInput(session,"loader.function",
                       placeholder=ifelse(isbin,"readRDS","read.csv"))
