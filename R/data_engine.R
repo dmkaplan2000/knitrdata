@@ -120,7 +120,7 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
   )
 
   if(!is.null(output)) {
-    writeLines(data,output)
+    cat(paste(data,collapse="\n"),file=output)
   }
 
   invisible(data)
@@ -189,7 +189,7 @@ eng_data = function(options) {
   # Save decoded data to file if desired
   if (!is.null(output.file))
     switch(format,
-           text = writeLines(data,output.file),
+           text = cat(paste(data,collapse="\n"),file=output.file),
            binary = writeBin(data,output.file)
     )
 
