@@ -681,9 +681,9 @@ The last two of these, `insert_data_chunk_dialog()` and `remove_chunks_dialog()`
 
 Before using these tools, first install all the additional packages suggested by `knitrdata`: `shiny`, `miniUI`, `DT`, `rstudioapi`.
 
-The use of these tools is generally self explanatory. The chunk creation apps ask for the name of the data file to be incorporated into the chunk, as well as a standard set of other chunk options, such as data format and encoding and output options. The app will attempt to suggest sensible options based on the input data file, though these can be changed afterward. For example, if a binary file is selected, then the format and encoding options will be set to `binary` and `base64` respectively. GPG encoding of data using the app is not currently supported. By default, `md5sum` checks of all data chunks will be included.
+The use of these tools is generally self explanatory. The chunk creation apps ask for the name of the data file to be incorporated into the chunk, as well as a standard set of other chunk options, such as data format and encoding and output options. The app will attempt to suggest sensible options based on the input data file, though these can be changed afterward. For example, if a binary file is selected, then the format and encoding options will be set to `binary` and `base64` respectively. GPG encoding of data using the app is supported and will prompt the user to select the key ID(s)s of the key(s) to be used to encrypt the data. By default, `md5sum` checks of all binary data chunks will be included.
 
-The chunk removal app present a searchible list of all chunks in the source document. To eliminate a set of chunks, one just selects the corresponding rows and clicks the `Remove chunks` button.
+The chunk removal app present a searchable list of all chunks in the source document. To eliminate a set of chunks, one just selects the corresponding rows and clicks the `Remove chunks` button.
 
 Note that these tools do not try to determine if the active source document is a Rmarkdown document. If undesired changes are made to a document, then one can undo (`ctrl-z`) those changes afterward.
 

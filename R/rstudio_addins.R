@@ -1,6 +1,8 @@
 # Functions meant to be used as Rstudio addins ---------------------------------------
 
+# Some minor helper functions
 isemp = function(x) is.null(x) || (x=="")
+firstword = function(x,split=" ") sapply(strsplit(x,split=split),function(y) y[1])
 
 # Function for creating a data chunk --------------------
 
@@ -32,7 +34,7 @@ isemp = function(x) is.null(x) || (x=="")
 #' @encoding UTF-8
 create_data_chunk_dialog = function (title="Data chunk creator",
                                      infobar="Fill out  click above to create chunk") {
-  pkgs = c("shiny","miniUI")#,"DT")
+  pkgs = c("shiny","miniUI")
   if (!all(sapply(pkgs,requireNamespace,quietly=TRUE)))
     stop("This function requires that the following packages be installed: ",
          paste(pkgs,collapse=", "))
@@ -86,11 +88,8 @@ create_data_chunk_dialog = function (title="Data chunk creator",
 
           keys = gpg::gpg_list_keys()
           output$gpg_receivers = shiny::renderUI(
-            #DT::dataTableOutput("keys")
-            selectInput("keys","GPG receivers: ",paste(keys$id,keys$name),multiple=TRUE)
+            shiny::selectInput("keys","GPG receivers: ",paste(keys$id,keys$name),multiple=TRUE)
           )
-          #rv$keys = gpg::gpg_list_keys()[c("id","fingerprint","name","email")]
-          #output$keys = DT::renderDataTable(rv$keys,server=FALSE)
         },
         {
           output$gpg_receivers = shiny::renderUI("")
@@ -107,7 +106,8 @@ create_data_chunk_dialog = function (title="Data chunk creator",
 
       shiny::updateRadioButtons(session,"format",selected=ifelse(isbin,"binary","text"))
       shiny::updateRadioButtons(session,"encoding",selected=ifelse(isbin,"base64","asis"))
-      shiny::updateCheckboxInput(session,"encode",value=isbin)
+      #shiny::updateCheckboxInput(session,"encode",value=isbin)
+      shiny::updateCheckboxInput(session,"md5sum",value=isbin) # To avoid issues with files not ending in newline
       shiny::updateTextInput(session,"loader.function",
                       placeholder=ifelse(isbin,"readRDS","read.csv"))
 
@@ -147,6 +147,11 @@ create_data_chunk_dialog = function (title="Data chunk creator",
         shiny::showModal(shiny::modalDialog("Loader function only has value if output variable name specified."))
       }
 
+      if (input$encoding=="gpg" && isemp(input$keys)) {
+        makechunk = FALSE
+        shiny::showModal(shiny::modalDialog("One or more GPG receivers must be specified for GPG encoding."))
+      }
+
       rv$makechunk = makechunk
     })
 
@@ -161,7 +166,11 @@ create_data_chunk_dialog = function (title="Data chunk creator",
 
         # Read and encode data
         if (input$encode && input$encoding != 'asis') {
-          chunk = data_encode(fn,encoding = input$encoding)
+          ops = list()
+          if (input$encoding == "gpg")
+            ops = list(receiver=firstword(input$keys))
+
+          chunk = data_encode(fn,encoding = input$encoding,options=ops)
         } else {
           chunk = readLines(fn)
         }
