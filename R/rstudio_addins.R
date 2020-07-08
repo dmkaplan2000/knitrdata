@@ -274,19 +274,13 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
     invisible(FALSE)
 
   ln = context$selection[[1]]$range$start["row"]
+  dp = rstudioapi::document_position(ln,1) # position object
 
-  txt = insert_chunk(
-    chunk = chunk,
-    line = ln,
-    rmd.text = context$contents
-  )
-
-  rstudioapi::setDocumentContents(paste(txt,collapse="\n"),context$id)
+  # Insert text
+  rstudioapi::insertText(dp,paste0(paste(chunk,collapse="\n"),"\n"),context$id)
 
   # Set position - sometimes causes errors for some unknown reason
-  rstudioapi::setCursorPosition(
-    rstudioapi::document_position(ln,1),
-    context$id)
+  rstudioapi::setCursorPosition(dp,context$id)
 
   invisible(TRUE)
 }
