@@ -117,7 +117,8 @@ chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
 chunklst
 
 # Render document to test
-rmarkdown::render("test.create_chunks.Rmd")
+if (rmarkdown::pandoc_available(version="1.12.3"))
+  rmarkdown::render("test.create_chunks.Rmd")
 
 # Clean up --------------
 file.remove("test.create_chunks.Rmd","test.create_chunks.RDS",
@@ -170,7 +171,8 @@ chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
 chunklst
 
 # Render document to test
-rmarkdown::render("test.create_chunks.Rmd")
+if (rmarkdown::pandoc_available(version="1.12.3"))
+  rmarkdown::render("test.create_chunks.Rmd")
 
 # Clean up --------------
 file.remove("test.create_chunks.Rmd","test.create_chunks.RDS",
@@ -184,6 +186,7 @@ Other Chunk tools:
 \code{\link{create_chunk}()},
 \code{\link{create_data_chunk_dialog}()},
 \code{\link{insert_data_chunk_dialog}()},
+\code{\link{insert_data_chunk_template}()},
 \code{\link{remove_chunks_dialog}()}
 }
 \author{

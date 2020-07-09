@@ -1,4 +1,9 @@
-Name: Insert data chunk
+Name: Insert empty data chunk
+Description: Insert empty template for a data chunk in active source document
+Binding: insert_data_chunk_template
+Interactive: false
+
+Name: Insert filled data chunk
 Description: Create & inserts a data chunk in active source document
 Binding: insert_data_chunk_dialog
 Interactive: true

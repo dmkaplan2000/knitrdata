@@ -285,6 +285,31 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
   invisible(TRUE)
 }
 
+# Empty data chunk template ----------------------------
+
+#' Insert an empty data chunk template in active source document
+#'
+#' This function is essentially the equivalent for data chunks
+#' of the "Insert a new code chunk" menu item
+#' available in Rstudio when a Rmarkdown document is open. It places at the current cursor
+#' location an empty \code{data} chunk that can then be modified and filled in by hand.
+#'
+#' @examples
+#' \dontrun{
+#' insert_data_chunk_template()
+#' }
+#'
+#' @export
+#'
+#' @family Chunk tools
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @encoding UTF-8
+insert_data_chunk_template = function() {
+  chunk = create_chunk("=== DELETE THIS CONTENT & INSERT DATA HERE ===\n=== At least one of output.var or output.file chunk options must be specified ===",
+                       format="text",encoding="asis",output.var=,output.file=,loader.function=NULL)
+  insert_data_chunk_dialog(chunk=chunk)
+}
+
 # Remove chunks ------------------------------
 
 #' Invoke Rstudio addin to remove chunks from the active source document

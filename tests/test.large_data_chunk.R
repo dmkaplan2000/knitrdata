@@ -60,9 +60,10 @@ chunklst
 # rapidly without any problems.
 
 # Render document to test -------
-system.time(
-  rmarkdown::render(rmd.fn)
-)
+if (rmarkdown::pandoc_available(version="1.12.3"))
+  system.time(
+    rmarkdown::render(rmd.fn)
+  )
 
 # Clean up --------------
 file.remove(rmd.fn,rds.fn,
