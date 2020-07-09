@@ -294,6 +294,8 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
 #' available in Rstudio when a Rmarkdown document is open. It places at the current cursor
 #' location an empty \code{data} chunk that can then be modified and filled in by hand.
 #'
+#' @return Returns \code{TRUE} if a chunk was inserted, \code{FALSE} otherwise.
+#'
 #' @examples
 #' \dontrun{
 #' insert_data_chunk_template()
@@ -305,9 +307,17 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #' @encoding UTF-8
 insert_data_chunk_template = function() {
-  chunk = create_chunk("=== DELETE THIS CONTENT & INSERT DATA HERE ===\n=== At least one of output.var or output.file chunk options must be specified ===",
-                       format="text",encoding="asis",output.var=,output.file=,loader.function=NULL)
-  insert_data_chunk_dialog(chunk=chunk)
+  chunk = create_chunk(
+    paste(
+      sep="\n",
+      "# Instructions:",
+      "# 1) Fill in at least one of these chunk options: output.var & output.file",
+      "# 2) Add or modify other chunk options",
+      "# 3) Delete these instructions and replace with data"
+    ),
+    format="text",encoding="asis",output.var=,output.file=,loader.function=NULL)
+
+  return(insert_data_chunk_dialog(chunk=chunk))
 }
 
 # Remove chunks ------------------------------

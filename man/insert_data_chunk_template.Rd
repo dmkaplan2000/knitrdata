@@ -7,6 +7,9 @@
 \usage{
 insert_data_chunk_template()
 }
+\value{
+Returns \code{TRUE} if a chunk was inserted, \code{FALSE} otherwise.
+}
 \description{
 This function is essentially the equivalent for data chunks
 of the "Insert a new code chunk" menu item
