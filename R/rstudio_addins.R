@@ -229,7 +229,7 @@ create_data_chunk_dialog = function (
     app=ui, server=server,
     viewer = shiny::dialogViewer(title))
 
-  invisible(chunk)
+  return(invisible(chunk))
 }
 
 # Insert data chunk ------------------------------
@@ -283,7 +283,7 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
     chunk = create_data_chunk_dialog(title=title,infobar=infobar)
 
   if (is.null(chunk))
-    invisible(FALSE)
+    return(invisible(FALSE))
 
   # Insert text
   rstudioapi::insertText(dp,paste0(paste(chunk,collapse="\n"),"\n"),context$id)
@@ -291,7 +291,7 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
   # Set position - sometimes causes errors for some unknown reason
   rstudioapi::setCursorPosition(dp,context$id)
 
-  invisible(TRUE)
+  return(invisible(TRUE))
 }
 
 # Empty data chunk template ----------------------------
@@ -428,5 +428,5 @@ remove_chunks_dialog = function (title="Eliminate (data) chunks") {
     app=ui, server=server,
     viewer = shiny::dialogViewer(title))
 
-  invisible(res)
+  return(invisible(res))
 }
