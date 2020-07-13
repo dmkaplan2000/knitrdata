@@ -43,7 +43,8 @@ chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
 chunklst
 
 # Render document to test
-rmarkdown::render("test.create_chunks.Rmd")
+if (rmarkdown::pandoc_available(version="1.12.3"))
+  rmarkdown::render("test.create_chunks.Rmd")
 
 # Clean up --------------
 file.remove("test.create_chunks.Rmd","test.create_chunks.RDS",

@@ -265,9 +265,12 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
   if (!requireNamespace("rstudioapi",quietly=TRUE))
     stop("The rstudioapi package must be installed to use this function.")
 
+  # Active document stuff
   context = rstudioapi::getSourceEditorContext()
   ln = context$selection[[1]]$range$start["row"]
+  dp = rstudioapi::document_position(ln,1) # position object
 
+  # Infobar contents
   infobar = paste0(
     "<big><b>",
     "Active document: ",ifelse(isemp(context$path),"<i>UNKNOWN</i>",context$path),
@@ -275,26 +278,55 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
     "Line number: ",ln,
     "</b></big>")
 
+  # Run dialog if chunk not given as argument
   if (is.null(chunk))
     chunk = create_data_chunk_dialog(title=title,infobar=infobar)
 
   if (is.null(chunk))
     invisible(FALSE)
 
-  txt = insert_chunk(
-    chunk = chunk,
-    line = ln,
-    rmd.text = context$contents
-  )
-
-  rstudioapi::setDocumentContents(paste(txt,collapse="\n"),context$id)
+  # Insert text
+  rstudioapi::insertText(dp,paste0(paste(chunk,collapse="\n"),"\n"),context$id)
 
   # Set position - sometimes causes errors for some unknown reason
-  rstudioapi::setCursorPosition(
-    rstudioapi::document_position(ln,1),
-    context$id)
+  rstudioapi::setCursorPosition(dp,context$id)
 
   invisible(TRUE)
+}
+
+# Empty data chunk template ----------------------------
+
+#' Insert an empty data chunk template in active source document
+#'
+#' This function is essentially the equivalent for data chunks
+#' of the "Insert a new code chunk" menu item
+#' available in Rstudio when a Rmarkdown document is open. It places at the current cursor
+#' location an empty \code{data} chunk that can then be modified and filled in by hand.
+#'
+#' @return Returns \code{TRUE} if a chunk was inserted, \code{FALSE} otherwise.
+#'
+#' @examples
+#' \dontrun{
+#' insert_data_chunk_template()
+#' }
+#'
+#' @export
+#'
+#' @family Chunk tools
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @encoding UTF-8
+insert_data_chunk_template = function() {
+  chunk = create_chunk(
+    paste(
+      sep="\n",
+      "# Instructions:",
+      "# 1) Fill in at least one of these chunk options: output.var & output.file",
+      "# 2) Add or modify other chunk options",
+      "# 3) Delete these instructions and replace with data"
+    ),
+    format="text",encoding="asis",output.var=,output.file=,loader.function=NULL)
+
+  return(insert_data_chunk_dialog(chunk=chunk))
 }
 
 # Remove chunks ------------------------------
