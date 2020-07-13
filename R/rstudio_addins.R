@@ -32,8 +32,9 @@ firstword = function(x,split=" ") sapply(strsplit(x,split=split),function(y) y[1
 #' @family Chunk tools
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #' @encoding UTF-8
-create_data_chunk_dialog = function (title="Data chunk creator",
-                                     infobar="Fill out  click above to create chunk") {
+create_data_chunk_dialog = function (
+  title="Data chunk creator",
+  infobar="<big><b>Fill out, then click above to create chunk</b></big>") {
   pkgs = c("shiny","miniUI")
   if (!all(sapply(pkgs,requireNamespace,quietly=TRUE)))
     stop("This function requires that the following packages be installed: ",
@@ -43,7 +44,7 @@ create_data_chunk_dialog = function (title="Data chunk creator",
     miniUI::gadgetTitleBar(title,left = miniUI::miniTitleBarCancelButton(),
                    right = miniUI::miniTitleBarButton("done", "Create chunk", primary = TRUE)),
     miniUI::miniContentPanel(
-      shiny::h3(shiny::textOutput('infobar')),
+      shiny::uiOutput('infobar'),
       shiny::hr(),
       shiny::fileInput("filename","Data file: "),
       shiny::textInput("chunk_label","Chunk label: ",placeholder="mydatachunk",width="100%"),
@@ -72,7 +73,7 @@ create_data_chunk_dialog = function (title="Data chunk creator",
   server <- function(input, output, session) {
     rv = shiny::reactiveValues(makechunk=FALSE)
 
-    output$infobar = shiny::renderText(infobar)
+    output$infobar = shiny::renderUI(shiny::HTML(infobar))
 
     # Add receivers list if GPG chosen
     shiny::observeEvent(input$encoding,{
@@ -265,15 +266,20 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
     stop("The rstudioapi package must be installed to use this function.")
 
   context = rstudioapi::getSourceEditorContext()
-  infobar = paste0("Active document: ",ifelse(isemp(context$path),"<<UNKNOWN>>",context$path))
+  ln = context$selection[[1]]$range$start["row"]
+
+  infobar = paste0(
+    "<big><b>",
+    "Active document: ",ifelse(isemp(context$path),"<i>UNKNOWN</i>",context$path),
+    "<br/>",
+    "Line number: ",ln,
+    "</b></big>")
 
   if (is.null(chunk))
     chunk = create_data_chunk_dialog(title=title,infobar=infobar)
 
   if (is.null(chunk))
     invisible(FALSE)
-
-  ln = context$selection[[1]]$range$start["row"]
 
   txt = insert_chunk(
     chunk = chunk,
