@@ -765,6 +765,15 @@ cat(sprintf(cond_text,5+4))
 
 Will lead to `%d` being replaced with `9`.
 
+### GPG `data` chunk error: `Password callback did not return a string value`
+
+If one includes in a Rmarkdown document a GPG-encoded data chunk that uses a password-protected 
+GPG key, then knitting may fail with the error `Password callback did not return a string value`. This is because knitting occurs in a non-interactive Rmarkdown session and, therefore, `gpg::gpg_decrypt` is unable to open the password entry dialog during the knitting process. The `gpg` package does not currently include another mechanism for providing the key password, but one can work around this problem by using any mechanism to temporarily store the key password in the GPG keyring manager. This can generally be achieved by decrypting something that was encrypted by the same key that was used to encrypt the chunk. If the password is available to the keyring, then `gpg::gpg_decrypt` will not attempt to open the password entry dialog, thereby avoiding the problem.
+
+If working in Rstudio, then the simplest way to work around this problem is by manually executing the chunk that produced the error using the `Run Current Chunk` button. Provided that the `knitrdata` package has been loaded/attached in the interactive R session, then this will open the password dialog, allowing one to enter the password and decrypt the chunk contents. After this, the password should be (temporarily) saved in the keyring and the document should knit successfully.
+
+As a final workaround to this problem, one can remove the password from the relevant GPG key in the keyring manager before knitting.
+
 ## Full list of data chunk options
 
 In addition to the standard `eval` and `echo` chunk options, `knitrdata` supports the following chunk options:

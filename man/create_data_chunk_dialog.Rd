@@ -7,13 +7,13 @@
 \usage{
 create_data_chunk_dialog(
   title = "Data chunk creator",
-  infobar = "Fill out  click above to create chunk"
+  infobar = "<big><b>Fill out, then click above to create chunk</b></big>"
 )
 }
 \arguments{
-\item{title}{Text to place in title bar of gadget.}
+\item{title}{Text to place in title bar of gadget}
 
-\item{infobar}{Text to place in information bar at top of gadget}
+\item{infobar}{HTML content to place in information bar at top of gadget}
 }
 \value{
 Invisibly returns the text of the data chunk as a character vector, one line per element.

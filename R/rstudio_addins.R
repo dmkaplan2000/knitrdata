@@ -17,8 +17,8 @@ firstword = function(x,split=" ") sapply(strsplit(x,split=split),function(y) y[1
 #' When the \code{Create chunk} button is clicked, the function will return the chunk contents
 #' including header and tail.
 #'
-#' @param title Text to place in title bar of gadget.
-#' @param infobar Text to place in information bar at top of gadget
+#' @param title Text to place in title bar of gadget
+#' @param infobar HTML content to place in information bar at top of gadget
 #'
 #' @return Invisibly returns the text of the data chunk as a character vector, one line per element.
 #'
