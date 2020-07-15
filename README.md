@@ -83,7 +83,7 @@ Zz8yfmCGaBcn/VNJdrpZTOxHNel/RLMiuHnkDaia/hdKVYs9ObnB6gIt9Q==
 ```
 ````
 
-`knitrdata` includes the `data_encode`, `create_chunk` and `insert_chunk` helper functions to facilitate encoding of data, creation and insertion of `data` chunks, respectively.
+`knitrdata` includes the `data_encode`, `create_chunk` and `insert_chunk` helper functions to facilitate encoding of data, creation and insertion of `data` chunks, respectively. The package also includes 3 Rstudio addins that facilitate including data chunks in Rmarkdown documents: `Insert empty data chunk`, `Insert filled data chunk` and `Remove chunks`. These are available in the `Addins` menu of Rstudio.
 
 `data` chunks are not limited to scientific data, but can also include images, text and text documents. For example, the following would export the given BibTeX references to the file `references.bib`:
 
@@ -135,3 +135,9 @@ then the contents of this file will be used to generate citations and the biblio
 The same process can be used to embed all ancillary formatting files (e.g., LaTeX .cls style files, bibliography .csl syle files, CSS files, LaTeX header files) inside an Rmarkdown document using `data` chunks, obviating the need for external files.
 
 See package vignettes, documentation and examples for more details, including a full list of chunk options and more usage examples.
+
+## Instructional video
+
+There is an instructional video screencast demonstrating the use of `knitrdata` in Rstudio. It is available on [youtube](https://youtu.be/xX4YRAXYFxE) or by clicking the video insert below.
+
+<iframe width="684" height="385" src="https://www.youtube.com/embed/xX4YRAXYFxE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
