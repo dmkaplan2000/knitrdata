@@ -138,6 +138,4 @@ See package vignettes, documentation and examples for more details, including a 
 
 ## Instructional video
 
-There is an instructional video screencast demonstrating the use of `knitrdata` in Rstudio. It is available on [youtube](https://youtu.be/xX4YRAXYFxE) or by clicking the video insert below.
-
-<iframe width="684" height="385" src="https://www.youtube.com/embed/xX4YRAXYFxE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+There is an instructional video screencast demonstrating the use of `knitrdata` in Rstudio. It is available on [youtube](https://youtu.be/xX4YRAXYFxE).
