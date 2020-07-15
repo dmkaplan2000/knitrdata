@@ -1,9 +1,10 @@
-knitrdata 0.4.2
+knitrdata 0.5.0
 ---------------------------------------------------------------------
 
 - Changing to insertText in Rstudio addins to speed insertion
 - New non-interactive addin to create empty data chunk
 - Better handling of missing password for GPG-encrypted chunks during knit
+- knitrdata instructional video
 
 knitrdata 0.4.1
 ---------------------------------------------------------------------

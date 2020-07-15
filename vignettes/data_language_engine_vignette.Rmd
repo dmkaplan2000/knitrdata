@@ -24,7 +24,7 @@ td = tempdir(check=TRUE)
 knitr::opts_knit$set(root.dir = td)
 ```
 
-This document provides a brief introduction to how to use the `knitrdata` package to create standalone Rmarkdown documents. For examples of Rmarkdown documents using the package, please consult the `examples` directory provided with the package. 
+This document provides a brief introduction to how to use the `knitrdata` package to create standalone Rmarkdown documents. For examples of Rmarkdown documents using the package, please consult the `examples` directory provided with the package. There is also an [instructional video](#video) for how to use the package.
 
 ## Conceptual overview
 
@@ -677,13 +677,13 @@ The steps described above for encoding data, creating data chunks and inserting 
 * `insert_data_chunk_dialog()`, which has the same functionality as `create_data_chunk_dialog()`, except that the data chunk that is created is inserted at the cursor location in the active source document in the Rstudio editor
 * `remove_chunks_dialog()`, which shows a data table listing all chunks in the active source document in the Rstudio editor, allowing one to select a set of chunks (i.e., rows) and then delete those chunks with the click of a button
 
-The last two of these, `insert_data_chunk_dialog()` and `remove_chunks_dialog()`, are accessible in the Rstudio Addins menu under the `knitrdata` heading with titles `Insert data chunk` and `Remove chunks`, respectively.
+The last two of these, `insert_data_chunk_dialog()` and `remove_chunks_dialog()`, are accessible in the Rstudio Addins menu under the `knitrdata` heading with titles `Insert filled data chunk` and `Remove chunks`, respectively. There is also a non-interactive addin entitled `Insert empty data chunk` that inserts an empty `data` chunk template in the active source document.
 
 Before using these tools, first install all the additional packages suggested by `knitrdata`: `shiny`, `miniUI`, `DT`, `rstudioapi`.
 
-The use of these tools is generally self explanatory. The chunk creation apps ask for the name of the data file to be incorporated into the chunk, as well as a standard set of other chunk options, such as data format and encoding and output options. The app will attempt to suggest sensible options based on the input data file, though these can be changed afterward. For example, if a binary file is selected, then the format and encoding options will be set to `binary` and `base64` respectively. GPG encoding of data using the app is supported and will prompt the user to select the key ID(s)s of the key(s) to be used to encrypt the data. By default, `md5sum` checks of all binary data chunks will be included.
+The use of these tools is generally self explanatory and is explained in greater detail in the [instructional video](#video). The chunk creation apps ask for the name of the data file to be incorporated into the chunk, as well as a standard set of other chunk options, such as data format and encoding and output options. The app will attempt to suggest sensible options based on the input data file, though these can be changed afterward. For example, if a binary file is selected, then the format and encoding options will be set to `binary` and `base64` respectively. GPG encoding of data using the app is supported and will prompt the user to select the key ID(s)s of the key(s) to be used to encrypt the data. By default, `md5sum` checks of all binary data chunks will be included.
 
-The chunk removal app present a searchable list of all chunks in the source document. To eliminate a set of chunks, one just selects the corresponding rows and clicks the `Remove chunks` button.
+The chunk removal addin presents a searchable list of all chunks in the source document. To eliminate a set of chunks, one just selects the corresponding rows and clicks the `Remove chunks` button.
 
 Note that these tools do not try to determine if the active source document is a Rmarkdown document. If undesired changes are made to a document, then one can undo (`ctrl-z`) those changes afterward.
 
@@ -698,6 +698,12 @@ One `knitrdata` feature that may at first glance seem to be of little value is t
 ## When not to use data chunks
 
 Though the `knitrdata` package can be a powerful tool, it can also be abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. The options to collapse `data` chunks in Rstudio, use Rstudio's navigation tools, use `knitrdata`'s helper functions for `data` chunk creation and the use of the `external.file` chunk option all can reduce the importance of these issues, but including very large amounts of data in Rmarkdown documents is unlikely to be optimal. In particular, Rstudio currently will not open a Rmarkdown documents larger than 5 MB in size, though larger documents can still be opened by other editors and rendering from the command line using `rmarkdown::render` is always possible. Basic prudence should be used when deciding what and how much data to include in Rmarkdown documents.
+
+## Instructional video {#video}
+
+There is an instructional video screencast demonstrating the use of `knitrdata` in Rstudio. It is available on [youtube](https://youtu.be/xX4YRAXYFxE) or by clicking the video insert below.
+
+<iframe width="684" height="385" src="https://www.youtube.com/embed/xX4YRAXYFxE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Tips & tricks {#tt}
 
