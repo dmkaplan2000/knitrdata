@@ -1,7 +1,9 @@
 knitrdata 0.5.1
 ---------------------------------------------------------------------
 
-- Addec TOC to vignette
+- Added TOC to vignette
+- Moved encoding/decoding of base64 to use functions in xfun
+- Removed dependency on base64enc package
 
 knitrdata 0.5.0
 ---------------------------------------------------------------------

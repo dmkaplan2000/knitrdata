@@ -13,7 +13,7 @@
 #' text-encoded data back into its original binary or text format (\code{data_decode}).
 #'
 #' Encoding and decoding in \code{base64} format uses functionality from the
-#' \code{\link[base64enc:base64]{base64enc}} package, whereas encoding and decoding using \code{gpg}
+#' \code{\link[xfun:base64_encode]{xfun}} package, whereas encoding and decoding using \code{gpg}
 #' uses functionality from the \code{\link[gpg:gpg_encrypt]{gpg}} package. See those packages for more
 #' details on the encoding and decoding process and setting up a \code{gpg} keyring.
 #'
@@ -32,7 +32,7 @@
 #' For both functions, the \code{options} input argument takes a list of
 #' additional input arguments that are passed directly to the encoding
 #' or decoding functions in the respective packages that handle the actual
-#' data translation. See \code{\link[base64enc:base64]{base64encode}} and
+#' data translation. See \code{\link[xfun:base64_encode]{base64_encode}} and
 #' \code{\link[gpg]{gpg_encrypt}} for details.
 #'
 #' For \code{gpg} encoding and decoding, in addition to installing the
@@ -50,7 +50,7 @@
 #' @param output Path where encoded data is to be stored. Optional; if \code{NULL} then
 #'   encoded data will not be written to a file.
 #' @param options A list containing extra argument for the encoding/decoding functions.
-#'   See \code{\link[base64enc:base64]{base64encode}} and \code{\link[gpg]{gpg_encrypt}}
+#'   See \code{\link[xfun:base64_encode]{base64_encode}} and \code{\link[gpg]{gpg_encrypt}}
 #'   for details and the description below for required options for \code{gpg}
 #'   encryption.
 #'
@@ -61,7 +61,7 @@
 #'   string (\code{as_text=TRUE}) or raw vector (\code{as_text=FALSE}).
 #' @family decode encode
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
-#' @seealso See also \code{\link[base64enc:base64]{base64encode}} and \code{\link[gpg]{gpg_encrypt}}.
+#' @seealso See also \code{\link[xfun:base64_encode]{base64_encode}} and \code{\link[gpg]{gpg_encrypt}}.
 #'
 #' @example tests/test.data_encode_decode.R
 data_decode = function(data,encoding,as_text=FALSE,options=list()) {
@@ -71,7 +71,10 @@ data_decode = function(data,encoding,as_text=FALSE,options=list()) {
   switch(
     encoding,
     base64 = {
-      x = base64enc::base64decode(data)
+      # Collapse everything into one string with no new line characters
+      data = gsub("[\r\n]","",paste0(data,collapse=""))
+
+      x = xfun::base64_decode(data)
       if (as_text)
         x = rawToChar(x)
       return(x)
@@ -99,6 +102,20 @@ data_decode = function(data,encoding,as_text=FALSE,options=list()) {
   )
 }
 
+# Helper function to split strings to a fixed size
+str.n.split = function(txt,n) {
+  nc <- nchar(txt)
+
+  # the indices where each substr will start
+  starts <- seq(1,nc, by=n)
+
+  # chop it up
+  sapply(starts, function(ii) {
+    substr(txt, ii, ii+n-1)
+  })
+}
+
+
 #' @export
 #'
 #' @describeIn data_decode Returns data encoded as a character string using
@@ -115,8 +132,12 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
       if (is.null(options$newline))
         options$newline = "\n"
 
-      do.call(base64enc::base64encode,
-              c(what=file,options))
+      # Use xfun to get encoded data as single long string
+      size = file.size(file)
+      x = xfun::base64_encode(readBin(con=file,what="raw",n=size))
+
+      # Split in appropriate places into multiple lines
+      paste0(str.n.split(x,options$linewidth),collapse=options$newline)
     },
     gpg = {
       if (!requireNamespace("gpg"))
@@ -130,7 +151,7 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
   )
 
   if(!is.null(output)) {
-    cat(paste(data,collapse="\n"),file=output)
+    cat(data,sep="\n",file=output)
   }
 
   invisible(data)
@@ -199,7 +220,7 @@ eng_data = function(options) {
   # Save decoded data to file if desired
   if (!is.null(output.file))
     switch(format,
-           text = cat(paste(data,collapse="\n"),file=output.file),
+           text = cat(data,sep="\n",file=output.file),
            binary = writeBin(data,output.file)
     )
 

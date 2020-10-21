@@ -41,7 +41,7 @@ For text files (e.g., CSV data tables), the chunk will typically just include th
 
 Both text and binary data files can be encoded, but this is required for binary data so that it can be incorporated in a (text) Rmarkdown document. Two encoding formats are currently implemented: `base64`, used for non-sensitive data; and `gpg`, allowing one to encrypt data so that only users with the decryption key have access to the data. The latter option requires that a GPG keyring be installed and properly configured.
 
-Two helper functions, `data_encode` and `data_decode` are included in the package to facilitate encoding and decoding of data files. These are basically wrapper functions for functionality provided by the [base64enc](https://cran.r-project.org/package=base64enc) and [gpg](https://cran.r-project.org/package=gpg) packages.
+Two helper functions, `data_encode` and `data_decode` are included in the package to facilitate encoding and decoding of data files. These are basically wrapper functions for functionality provided by the [xfun](https://cran.r-project.org/package=xfun) and [gpg](https://cran.r-project.org/package=gpg) packages.
 
 In the examples below, we will use the following simple data frame that exists in both text and binary formats:
 
