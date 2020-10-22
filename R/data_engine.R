@@ -9,59 +9,68 @@
 #' Decode and encode text and binary data files
 #'
 #' These helper functions allow one to encode as text a binary or text data file
-#' using either \code{base64} or \code{gpg} encoding (\code{data_encode}) and decode
-#' text-encoded data back into its original binary or text format (\code{data_decode}).
+#' using either \code{base64} or \code{gpg} encoding (\code{data_encode}) and
+#' decode text-encoded data back into its original binary or text format
+#' (\code{data_decode}).
 #'
 #' Encoding and decoding in \code{base64} format uses functionality from the
-#' \code{\link[xfun:base64_encode]{xfun}} package, whereas encoding and decoding using \code{gpg}
-#' uses functionality from the \code{\link[gpg:gpg_encrypt]{gpg}} package. See those packages for more
-#' details on the encoding and decoding process and setting up a \code{gpg} keyring.
+#' \code{\link[xfun:base64_encode]{xfun}} package, whereas encoding and decoding
+#' using \code{gpg} uses functionality from the
+#' \code{\link[gpg:gpg_encrypt]{gpg}} package. See those packages for more
+#' details on the encoding and decoding process and setting up a \code{gpg}
+#' keyring.
 #'
-#' \code{data_encode} takes the name of a file containing the binary or text data
-#' to be encoded and returns the encoded data as a character string.
-#' The encoded data is returned silently to avoid outputing to the screen large
+#' \code{data_encode} takes the name of a file containing the binary or text
+#' data to be encoded and returns the encoded data as a character string. The
+#' encoded data is returned silently to avoid outputing to the screen large
 #' amounts of encoded data. If you want to visualize the encoded data, use the
-#' \code{cat} function.
-#' For larger data files, set the \code{output} argument to a path where the
-#' encoded data will be stored.
+#' \code{cat} function. For larger data files, set the \code{output} argument to
+#' a path where the encoded data will be stored.
 #'
-#' \code{data_encode} takes a character string of encoded data and returns either
-#' a character string of decoded data (if \code{as_text=TRUE}) or a raw vector
-#' of decoded binary data (if \code{as_text=FALSE}).
+#' \code{data_encode} takes a character string of encoded data and returns
+#' either a character string of decoded data (if \code{as_text=TRUE}) or a raw
+#' vector of decoded binary data (if \code{as_text=FALSE}).
 #'
 #' For both functions, the \code{options} input argument takes a list of
-#' additional input arguments that are passed directly to the encoding
-#' or decoding functions in the respective packages that handle the actual
-#' data translation. See \code{\link[xfun:base64_encode]{base64_encode}} and
+#' additional input arguments that are passed directly to the encoding or
+#' decoding functions in the respective packages that handle the actual data
+#' translation. See \code{\link[xfun:base64_encode]{base64_encode}} and
 #' \code{\link[gpg]{gpg_encrypt}} for details.
 #'
 #' For \code{gpg} encoding and decoding, in addition to installing the
-#' \code{\link[gpg:gpg_encrypt]{gpg}} package, a \code{gpg} keyring must
-#' be installed and properly configured. For encoding,
-#' the \code{receiver} and potentially
-#' the \code{signer} arguments must be supplied as elements of the \code{options}
-#' input argument.
+#' \code{\link[gpg:gpg_encrypt]{gpg}} package, a \code{gpg} keyring must be
+#' installed and properly configured. For encoding, the \code{receiver} and
+#' potentially the \code{signer} arguments must be supplied as elements of the
+#' \code{options} input argument.
 #'
 #' @param data Encoded data as a character string
 #' @param file Path to file containing data to be encoded
 #' @param encoding Either \code{'base64'} or \code{'gpg'}
 #' @param as_text A boolean indicating if decoded data should be treated as text
-#'   (\code{TRUE}) or binary (\code{FALSE}). Defaults to \code{FALSE}, meaning binary.
-#' @param output Path where encoded data is to be stored. Optional; if \code{NULL} then
-#'   encoded data will not be written to a file.
-#' @param options A list containing extra argument for the encoding/decoding functions.
-#'   See \code{\link[xfun:base64_encode]{base64_encode}} and \code{\link[gpg]{gpg_encrypt}}
-#'   for details and the description below for required options for \code{gpg}
-#'   encryption.
+#'   (\code{TRUE}) or binary (\code{FALSE}). Defaults to \code{FALSE}, meaning
+#'   binary.
+#' @param output Path where encoded data is to be stored. Optional; if
+#'   \code{NULL} then encoded data will not be written to a file.
+#' @param options A list containing extra arguments for the encoding/decoding
+#'   functions. For \code{base64} encoding, \code{linewidth} (defaults to 64)
+#'   and and \code{newline} (defaults to '\\n') optional arguments are possible.
+#'   For \code{gpg} encoding, see the description below for details regarding the
+#'   required \code{receiver} option to define the key to use for encryption.
+#'   For further details and potentially other additional arguments,
+#'   see the help of the corresponding underlying encoding
+#'   functions: \code{\link[xfun:base64_encode]{base64_encode}} and
+#'   \code{\link[gpg]{gpg_encrypt}}.
 #'
-#' @return Returns either the decoded data (\code{data_decode}) or the encoded data (\code{data_encode}).
+#' @return Returns either the decoded data (\code{data_decode}) or the encoded
+#'   data (\code{data_encode}).
 #' @export
 #'
-#' @describeIn data_decode Returns decoded data as either a character
-#'   string (\code{as_text=TRUE}) or raw vector (\code{as_text=FALSE}).
+#' @describeIn data_decode Returns decoded data as either a character string
+#'   (\code{as_text=TRUE}) or raw vector (\code{as_text=FALSE}).
 #' @family decode encode
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
-#' @seealso See also \code{\link[xfun:base64_encode]{base64_encode}} and \code{\link[gpg]{gpg_encrypt}}.
+#' @seealso See also \code{\link[xfun:base64_encode]{base64_encode}} and
+#'   \code{\link[gpg]{gpg_encrypt}}.
 #'
 #' @example tests/test.data_encode_decode.R
 data_decode = function(data,encoding,as_text=FALSE,options=list()) {
