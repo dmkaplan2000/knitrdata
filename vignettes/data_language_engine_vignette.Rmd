@@ -738,7 +738,7 @@ v
 
 ### Conditional text in Rmarkdown with missing values {#condtext}
 
-One way to create large amounts of text in an Rmarkdown document that is only included in the document if certain conditions are met is with the `asis` language engine (or the `cat` language engine). For example, if one creates an input parameter in the YAML header of an Rmarkdown document:
+One way to create large amounts of text in an Rmarkdown document that is only included in the document if certain conditions are met is with the `asis` language engine. For example, if one creates an input parameter in the YAML header of an Rmarkdown document:
 
 ```{r eval=FALSE}
 params:
@@ -772,6 +772,16 @@ cat(sprintf(cond_text,5+4))
 ````
 
 Will lead to `%d` being replaced with `9`.
+
+### Unencoded text chunks and md5sum
+
+Using `md5sum` checks on text chunks that are not encoded (i.e., `'asis'`) can be tricky because when the chunk is processed, a (Unix) newline character will be added to each line, including the final line even if this line lacked a newline character in the original external text file. This will potentially make the md5sum check fail. To have the best possible chances of success when using `md5sum` checks with unencoded text files, follow these steps:
+
+* Assure that the original external text file has a newline character on the last line (i.e., the file ends on a new empty line)
+* Use Unix (`\n`) line breaks instead of DOS (`\r\n`) line breaks if at all possible
+* If for some reason DOS text file formats are necessary, you can attempt to use the `line.sep="\r\n"` chunk option to output DOS formatted text files
+
+The concerns do not normally apply to `base64` or `gpg` encoded text files as the exact text file contents are encoded in the chunk contents.
 
 ### Workarounds for GPG data chunk error: *Password callback did not return a string value*
 

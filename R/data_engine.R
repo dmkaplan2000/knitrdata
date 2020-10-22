@@ -146,7 +146,7 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
       x = xfun::base64_encode(readBin(con=file,what="raw",n=size))
 
       # Split in appropriate places into multiple lines
-      paste0(str.n.split(x,options$linewidth),collapse=options$newline)
+      paste0(str.n.split(x,options$linewidth),options$newline,collapse="")
     },
     gpg = {
       if (!requireNamespace("gpg"))
@@ -160,7 +160,7 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
   )
 
   if(!is.null(output)) {
-    cat(data,sep="\n",file=output)
+    cat(data,file=output)
   }
 
   invisible(data)
@@ -212,7 +212,7 @@ eng_data = function(options) {
     stop("decoding.ops should be a list. Got object of class ",class(decoding.ops)[1])
 
   if (encoding == "asis") {
-    data = paste(code,collapse=ifelse(is.null(options$line.sep),"\n",options$line.sep))
+    data = paste0(code,ifelse(is.null(options$line.sep),"\n",options$line.sep),collapse="")
   } else {
     data = data_decode(code,encoding,as_text=(format=="text"),options=decoding.ops)
   }
@@ -229,7 +229,7 @@ eng_data = function(options) {
   # Save decoded data to file if desired
   if (!is.null(output.file))
     switch(format,
-           text = cat(data,sep="\n",file=output.file),
+           text = cat(data,file=output.file),
            binary = writeBin(data,output.file)
     )
 

@@ -68,6 +68,7 @@ create_chunk = function(text=readLines(file),
   header = paste0("```{",chunk_type," ",chunk_label,dots,"}")
   tail = "```"
 
+  text = sub("\n$","",text) # Removing any trailing newline
   chunk = paste(header,text,tail,sep="\n")
 
   if (split_lines)
