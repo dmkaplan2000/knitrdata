@@ -1,6 +1,6 @@
 # Use a temporary directory ----------------------------
 owd = getwd()
-td = tempdir(check=TRUE)
+td = tempdir()
 setwd(td)
 
 # Do some data encoding and decoding ------------------

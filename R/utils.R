@@ -20,12 +20,15 @@
 #' @return A boolean that will be \code{TRUE} if a file is considered to be binary.
 #'
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @export
 is.file.binary = function(file,bin.chars=c(1:8,14:25),nchars=1000,nbin=2) {
   x = as.integer(readBin(file,"raw",nchars))
   n = sum(x %in% bin.chars)
 
   return(n>nbin)
 }
+
+# Helper function for handling text file newline mess --------
 
 #' Platform independent newline string
 #'
@@ -38,4 +41,5 @@ is.file.binary = function(file,bin.chars=c(1:8,14:25),nchars=1000,nbin=2) {
 #' other operating system it will return \code{'\n'}.
 #'
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @export
 platform.newline = function(os=.Platform$OS.type) ifelse(grepl("windows",tolower(os)),"\r\n","\n")

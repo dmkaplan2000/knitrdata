@@ -74,7 +74,7 @@ document broken into
 \examples{
 # Use a temporary directory ----------------------------
 owd = getwd()
-td = tempdir(check=TRUE)
+td = tempdir()
 setwd(td)
 
 # Test --------------
@@ -128,7 +128,7 @@ unlink("test.create_chunks_files",recursive=TRUE)
 setwd(owd)
 # Use a temporary directory ----------------------------
 owd = getwd()
-td = tempdir(check=TRUE)
+td = tempdir()
 setwd(td)
 
 # Test --------------

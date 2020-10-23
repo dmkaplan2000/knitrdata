@@ -71,7 +71,7 @@
 #' @family decode encode
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #' @seealso See also \code{\link[xfun:base64_encode]{base64_encode}} and
-#'   \code{\link[gpg]{gpg_encrypt}}.
+#'   \code{\link[gpg]{gpg_encrypt}}, \code{\link{platform.newline}}.
 #'
 #' @example tests/test.data_encode_decode.R
 data_decode = function(data,encoding,as_text=FALSE,options=list()) {

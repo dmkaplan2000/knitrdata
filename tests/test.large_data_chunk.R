@@ -1,6 +1,6 @@
 # Use a temporary directory ----------------------------
 owd = getwd()
-td = tempdir(check=TRUE)
+td = tempdir()
 setwd(td)
 
 # Create lots of data to insert into doc ------------------

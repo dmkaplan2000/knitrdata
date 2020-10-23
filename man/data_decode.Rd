@@ -87,7 +87,7 @@ potentially the \code{signer} arguments must be supplied as elements of the
 \examples{
 # Use a temporary directory ----------------------------
 owd = getwd()
-td = tempdir(check=TRUE)
+td = tempdir()
 setwd(td)
 
 # Do some data encoding and decoding ------------------
@@ -125,7 +125,7 @@ setwd(owd)
 }
 \seealso{
 See also \code{\link[xfun:base64_encode]{base64_encode}} and
-  \code{\link[gpg]{gpg_encrypt}}.
+  \code{\link[gpg]{gpg_encrypt}}, \code{\link{platform.newline}}.
 }
 \author{
 David M. Kaplan \email{dmkaplan2000@gmail.com}
