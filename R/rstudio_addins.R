@@ -176,7 +176,7 @@ create_data_chunk_dialog = function (
           chunk = readLines(fn)
         }
 
-        chunk = do.call(c,strsplit(chunk,"\n")) # Break into lines
+        chunk = do.call(c,strsplit(chunk,"\r?\n")) # Break into lines
         chunk_label = NULL
         if (!isemp(input$chunk_label))
           chunk_label = input$chunk_label
@@ -286,7 +286,7 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
     return(invisible(FALSE))
 
   # Insert text
-  rstudioapi::insertText(dp,paste0(paste(chunk,collapse="\n"),"\n"),context$id)
+  rstudioapi::insertText(dp,paste(chunk,platform.newline(),collapse=""),context$id)
 
   # Set position - sometimes causes errors for some unknown reason
   rstudioapi::setCursorPosition(dp,context$id)
@@ -318,7 +318,7 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
 insert_data_chunk_template = function() {
   chunk = create_chunk(
     paste(
-      sep="\n",
+      sep=platform.newline(),
       "# Instructions:",
       "# 1) Fill in at least one of these chunk options: output.var & output.file",
       "# 2) Add or modify other chunk options",
@@ -410,7 +410,7 @@ remove_chunks_dialog = function (title="Eliminate (data) chunks") {
       contents = contents[-1*lns]
 
       # Put into document
-      rstudioapi::setDocumentContents(paste(contents,collapse="\n"),context$id)
+      rstudioapi::setDocumentContents(paste0(contents,platform.newline()),context$id)
       rstudioapi::setCursorPosition(
         rstudioapi::document_position(min(lns)-1,1),
         context$id)

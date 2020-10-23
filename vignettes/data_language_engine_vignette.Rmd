@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 library(knitrdata) # load package
 
 # Change document root to not write to user or package space
-td = tempdir(check=TRUE)
+td = tempdir()
 knitr::opts_knit$set(root.dir = td)
 ```
 

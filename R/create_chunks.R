@@ -28,7 +28,7 @@
 #' @param chunk_options_string Character vector with additional chunk options that will
 #'   be included in the header after the arguments in \dots.
 #' @param split_lines Boolean indicating whether or not the chunk contents should be split
-#'   along line break (\code{'\n'}) before returning. Defaults to \code{TRUE}.
+#'   along line breaks before returning. Defaults to \code{TRUE}.
 #' @param chunk Character string with chunk contents including header and tail.
 #' @param line Line number where chunk to be inserted.
 #' @param rmd.text Text of Rmarkdown document where chunk contents are to be inserted.
@@ -47,7 +47,7 @@ create_chunk = function(text=readLines(file),
                         chunk_type="data",
                         file=NULL,chunk_options_string=NULL,
                         split_lines=TRUE) {
-  text = paste(text,collapse="\n")
+  text = paste(text,collapse=platform.newline())
 
   # Get additional input options as character string
   args = match.call(expand.dots=FALSE)$...
@@ -68,11 +68,11 @@ create_chunk = function(text=readLines(file),
   header = paste0("```{",chunk_type," ",chunk_label,dots,"}")
   tail = "```"
 
-  text = sub("\n$","",text) # Removing any trailing newline
-  chunk = paste(header,text,tail,sep="\n")
+  text = sub("\r?\n$","",text) # Removing any trailing newline
+  chunk = paste(header,text,tail,sep=platform.newline())
 
   if (split_lines)
-    chunk = strsplit(chunk,"\n")[[1]]
+    chunk = strsplit(chunk,"\r?\n")[[1]]
 
   invisible(chunk)
 }

@@ -1,12 +1,15 @@
+library(knitrdata)
+library(magrittr) # For pipe operator
+
 # Use a temporary directory ----------------------------
 owd = getwd()
-td = tempdir(check=TRUE)
+td = tempdir()
 setwd(td)
 
 # Create a simple text file ------------------
-txt = "Hello\nGoodbye\n"
+txt = paste0("Hello",platform.newline(),"Goodbye",platform.newline())
 txt.fn = "test.md5sum_chunks.txt"
-cat(txt,file=txt.fn)
+writeChar(txt,txt.fn,useBytes=TRUE,eos=NULL)
 txt.md5 = tools::md5sum(txt.fn)
 
 # Create a simple binary file ----------------
@@ -16,10 +19,6 @@ saveRDS(d,rds.fn)
 rds.md5 = tools::md5sum(rds.fn)
 
 # Create Rmarkdown doc --------------
-library(knitrdata)
-library(magrittr) # For pipe operator
-
-# Create new Rmarkdown document
 rmd.fn = "test.md5sum_chunks.Rmd"
 if (file.exists(rmd.fn))
   file.remove(rmd.fn)

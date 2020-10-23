@@ -53,12 +53,13 @@
 #'   \code{NULL} then encoded data will not be written to a file.
 #' @param options A list containing extra arguments for the encoding/decoding
 #'   functions. For \code{base64} encoding, \code{linewidth} (defaults to 64)
-#'   and and \code{newline} (defaults to '\\n') optional arguments are possible.
-#'   For \code{gpg} encoding, see the description below for details regarding the
-#'   required \code{receiver} option to define the key to use for encryption.
-#'   For further details and potentially other additional arguments,
-#'   see the help of the corresponding underlying encoding
-#'   functions: \code{\link[xfun:base64_encode]{base64_encode}} and
+#'   and and \code{newline} (defaults to \code{\link{platform.newline}()})
+#'   optional arguments are possible. For \code{gpg} encoding, see the
+#'   description below for details regarding the required \code{receiver} option
+#'   to define the key to use for encryption. For further details and
+#'   potentially other additional arguments, see the help of the corresponding
+#'   underlying encoding functions:
+#'   \code{\link[xfun:base64_encode]{base64_encode}} and
 #'   \code{\link[gpg]{gpg_encrypt}}.
 #'
 #' @return Returns either the decoded data (\code{data_decode}) or the encoded
@@ -99,7 +100,7 @@ data_decode = function(data,encoding,as_text=FALSE,options=list()) {
       x = try(do.call(gpg::gpg_decrypt,c(data=tf,as_text=as_text,options)),silent=TRUE)
       if (any(class(x) == "try-error")) {
         if (grepl("Password callback did not return a string value",x)) {
-          stop(x,"\nIf this error occurred while knitting a Rmarkdown document, then it occurred because the non-interactive Rmarkdown session was unable to open the GPG key password dialog. To avoid this error, in Rstudio, execute the offending chunk interactively to temporarily store the key password in the GPG keyring manager before knitting. See knitrdata package vignette for more details.")
+          stop(x,"","If this error occurred while knitting a Rmarkdown document, then it occurred because the non-interactive Rmarkdown session was unable to open the GPG key password dialog. To avoid this error, in Rstudio, execute the offending chunk interactively to temporarily store the key password in the GPG keyring manager before knitting. See knitrdata package vignette for more details.")
         } else {
           stop(x)
         }
@@ -139,7 +140,7 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
       if (is.null(options$linewidth))
         options$linewidth = 64
       if (is.null(options$newline))
-        options$newline = "\n"
+        options$newline = platform.newline()
 
       # Use xfun to get encoded data as single long string
       size = file.size(file)
@@ -212,7 +213,7 @@ eng_data = function(options) {
     stop("decoding.ops should be a list. Got object of class ",class(decoding.ops)[1])
 
   if (encoding == "asis") {
-    data = paste0(code,ifelse(is.null(options$line.sep),"\n",options$line.sep),collapse="")
+    data = paste0(code,ifelse(is.null(options$line.sep),platform.newline(),options$line.sep),collapse="")
   } else {
     data = data_decode(code,encoding,as_text=(format=="text"),options=decoding.ops)
   }
@@ -229,7 +230,7 @@ eng_data = function(options) {
   # Save decoded data to file if desired
   if (!is.null(output.file))
     switch(format,
-           text = cat(data,file=output.file),
+           text = writeChar(data,output.file,eos=NULL,useBytes = TRUE),
            binary = writeBin(data,output.file)
     )
 

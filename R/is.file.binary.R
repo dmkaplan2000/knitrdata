@@ -26,3 +26,16 @@ is.file.binary = function(file,bin.chars=c(1:8,14:25),nchars=1000,nbin=2) {
 
   return(n>nbin)
 }
+
+#' Platform independent newline string
+#'
+#' A simple function to determine the appropriate newline string for a given
+#' operating system.
+#'
+#' @param os Name of the operating system. Defaults to \code{.Platform$OS.type}
+#'
+#' @return For Windows, this should return \code{'\r\n'}, whereas for
+#' other operating system it will return \code{'\n'}.
+#'
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+platform.newline = function(os=.Platform$OS.type) ifelse(grepl("windows",tolower(os)),"\r\n","\n")
