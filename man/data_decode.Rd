@@ -20,12 +20,13 @@ binary.}
 
 \item{options}{A list containing extra arguments for the encoding/decoding
 functions. For \code{base64} encoding, \code{linewidth} (defaults to 64)
-and and \code{newline} (defaults to '\\n') optional arguments are possible.
-For \code{gpg} encoding, see the description below for details regarding the
-required \code{receiver} option to define the key to use for encryption.
-For further details and potentially other additional arguments,
-see the help of the corresponding underlying encoding
-functions: \code{\link[xfun:base64_encode]{base64_encode}} and
+and and \code{newline} (defaults to \code{\link{platform.newline}()})
+optional arguments are possible. For \code{gpg} encoding, see the
+description below for details regarding the required \code{receiver} option
+to define the key to use for encryption. For further details and
+potentially other additional arguments, see the help of the corresponding
+underlying encoding functions:
+\code{\link[xfun:base64_encode]{base64_encode}} and
 \code{\link[gpg]{gpg_encrypt}}.}
 
 \item{file}{Path to file containing data to be encoded}
