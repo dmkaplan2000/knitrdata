@@ -1,7 +1,7 @@
 Package: knitrdata
 Type: Package
 Title: Data Language Engine for 'knitr' / 'rmarkdown'
-Version: 0.5.2
+Version: 0.5.3
 Authors@R: c(
   person("David M.", "Kaplan", role = c("aut", "cre", "cph"), email = "dmkaplan2000@gmail.com", comment = c(ORCID = "0000-0001-6087-359X", github = "dmkaplan2000"))
   )
@@ -13,6 +13,6 @@ LazyData: true
 URL: https://github.com/dmkaplan2000/knitrdata
 Depends: R (> 3.5.0)
 Imports: knitr, xfun (>= 0.16)
-Suggests: gpg, rmarkdown, magrittr, shiny, miniUI, rstudioapi (>= 0.11), DT
+Suggests: gpg, rmarkdown, magrittr, shiny, miniUI, rstudioapi (>= 0.11), DT, digest
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr
