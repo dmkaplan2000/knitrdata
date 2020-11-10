@@ -47,7 +47,7 @@ create_chunk = function(text=readLines(file),
                         chunk_type="data",
                         file=NULL,chunk_options_string=NULL,
                         split_lines=TRUE) {
-  text = paste(text,collapse=platform.newline())
+  text = paste0(text,collapse=platform.newline())
 
   # Get additional input options as character string
   args = match.call(expand.dots=FALSE)$...

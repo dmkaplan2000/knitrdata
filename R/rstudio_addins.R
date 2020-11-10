@@ -286,7 +286,7 @@ insert_data_chunk_dialog = function (title="Data chunk inserter",
     return(invisible(FALSE))
 
   # Insert text
-  rstudioapi::insertText(dp,paste(chunk,platform.newline(),collapse=""),context$id)
+  rstudioapi::insertText(dp,paste0(chunk,platform.newline(),collapse=""),context$id)
 
   # Set position - sometimes causes errors for some unknown reason
   rstudioapi::setCursorPosition(dp,context$id)
@@ -410,7 +410,7 @@ remove_chunks_dialog = function (title="Eliminate (data) chunks") {
       contents = contents[-1*lns]
 
       # Put into document
-      rstudioapi::setDocumentContents(paste0(contents,platform.newline()),context$id)
+      rstudioapi::setDocumentContents(paste0(contents,platform.newline(),collapse=""),context$id)
       rstudioapi::setCursorPosition(
         rstudioapi::document_position(min(lns)-1,1),
         context$id)
