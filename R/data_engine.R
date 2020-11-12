@@ -266,5 +266,5 @@ eng_data = function(options) {
     code = c(code[1:options$max.echo],
              paste0("-- ",length(code)-options$max.echo," more lines of data ommitted --"))
 
-  knitr::engine_output(options,code,output)
+  return(knitr::engine_output(options,code,output))
 }

@@ -12,7 +12,7 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/dmkaplan2000/knitrdata
 Depends: R (> 3.5.0)
-Imports: knitr, xfun (>= 0.16)
+Imports: knitr, xfun (>= 0.16), methods
 Suggests: gpg, rmarkdown, magrittr, shiny, miniUI, rstudioapi (>= 0.11), DT, digest
 RoxygenNote: 7.1.1
 VignetteBuilder: knitr

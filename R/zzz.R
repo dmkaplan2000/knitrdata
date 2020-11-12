@@ -10,9 +10,15 @@
   .knitrdata_env(knitr::knit_global())
 
   knitr::knit_engines$set(data=eng_data)
+
+  # Extra engines
+  knitr::knit_engines$set(csv=eng_csv,csv2=eng_csv2,rds=eng_rds)
 }
 
 # Remove data language engine on package unload
 .onUnload = function(libname,pkgname) {
   knitr::knit_engines$delete("data")
+
+  # Extra engines
+  knitr::knit_engines$delete(c("csv","csv2","rds"))
 }

@@ -28,6 +28,30 @@ is.file.binary = function(file,bin.chars=c(1:8,14:25),nchars=1000,nbin=2) {
   return(n>nbin)
 }
 
+file.type = function(file,bin.chars=c(1:8,14:25),nchars=1000,nbin=2) {
+  x = readBin(file,"raw",nchars)
+  n = sum(as.integer(x) %in% bin.chars)
+
+  r = list()
+  r$type=ifelse(n>nbin,"binary","text")
+
+  if (r$type=="text") {
+    x = rawToChar(x)
+
+    if (grepl("\r\n",x)) {
+      r$newline = "\r\n"
+    } else {
+      if (grepl("\n",x)) {
+        r$newline = "\n"
+      } else {
+        r$newline = NA_character_
+      }
+    }
+  }
+
+  return(r)
+}
+
 # Helper function for handling text file newline mess --------
 
 #' Platform independent newline string
