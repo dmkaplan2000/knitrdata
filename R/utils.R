@@ -1,36 +1,57 @@
 # Function to determine if a file is binary or text -------------------------
 
-#' Determine if a file is binary or text
+#' Functions to assess if files are binary, DOS text or UNIX text format
 #'
-#' This function attempts to determine if file is binary or text. It does this
-#' using a heuristic based on finding at least \code{nbin} ASCII control
-#' (i.e., non-printing) characters in the first \code{nchars} of the file.
-#' This works well for standard ASCII text, but I have no idea how it will
-#' work with complex UTF8 text (e.g., Chinese).
+#' These functions attempt to determine if a file is binary or text. In
+#' addition, \code{file.type} attempts to determine the newline character(s)
+#' used in the file.
+#'
+#' A file is assessed to be binary using a heuristic based on finding more than
+#' \code{nbin} ASCII control (i.e., non-printing) characters in the first
+#' \code{nbytes} of the file. This works well for standard ASCII text, but it
+#' may be less effective for complex UTF8 text (e.g., Chinese).
+#'
+#' For text files, line endings are assessed by \code{file.type} by searching
+#' first for DOS line endings (\code{\\r\\n}) in the first \code{nbytes} of the
+#' input file, and then by searching for UNIX line endings (\code{\\n}). If
+#' neither is found, then \code{NA_character_} is returned for the line ending.
 #'
 #' @param file The path to the file to be examined
-#' @param bin.chars List of control characters that are to be considered when
-#'   when looking for signs a file is binary. Default includes most ASCII
-#'   control characters except things like NULL, LF, CR and HT that might actually
-#'   appear in an ASCII file.
-#' @param nchars Number of bytes to read in from the beginning of the file.
-#' @param nbin An integer indicating the threshold on the number of control characters
-#'   above which a file is considered binary. Defaults to 2.
+#' @param bin.ints List of integers with the ASCII values of control characters
+#'   that are to be considered when when looking for signs a file is binary.
+#'   Default includes most ASCII control characters except things like NULL, LF,
+#'   CR and HT that might actually appear in an ASCII file.
+#' @param nbytes Number of bytes to read in from the beginning of the file.
+#' @param nbin An integer indicating the threshold on the number of control
+#'   characters above which a file is considered binary. Defaults to 2.
 #'
-#' @return A boolean that will be \code{TRUE} if a file is considered to be binary.
+#' @return For \code{is.file.binary}, a boolean value is returned, whereas a
+#'   list is returned for \code{file.type}.
 #'
+#' @describeIn is.file.binary A boolean that will be \code{TRUE} if a file is considered to be
+#'   binary.
+#' @family binary text tests
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @seealso See also \code{\link{platform.newline}}.
 #' @export
-is.file.binary = function(file,bin.chars=c(1:8,14:25),nchars=1000,nbin=2) {
-  x = as.integer(readBin(file,"raw",nchars))
-  n = sum(x %in% bin.chars)
+is.file.binary = function(file,bin.ints=c(1:8,14:25),nbytes=1000,nbin=2) {
+  x = as.integer(readBin(file,"raw",nbytes))
+  n = sum(x %in% bin.ints)
 
   return(n>nbin)
 }
 
-file.type = function(file,bin.chars=c(1:8,14:25),nchars=1000,nbin=2) {
-  x = readBin(file,"raw",nchars)
-  n = sum(as.integer(x) %in% bin.chars)
+#' @export
+#'
+#' @describeIn is.file.binary Returns a list with up to two elements:
+#'   \code{type} & \code{newline}. \code{type} can either by \code{"binary"} or
+#'   \code{"text"}. \code{newline} will be \code{NULL} for binary files,
+#'   \code{"\\r\\n"} for DOS formatted text files, \code{"\\n"} for UNIX
+#'   formatted text files and \code{NA_character_} for text files without any
+#'   newline characters in the first \code{nbytes} of the file.
+file.type = function(file,bin.ints=c(1:8,14:25),nbytes=1000,nbin=2) {
+  x = readBin(file,"raw",nbytes)
+  n = sum(as.integer(x) %in% bin.ints)
 
   r = list()
   r$type=ifelse(n>nbin,"binary","text")
@@ -65,5 +86,6 @@ file.type = function(file,bin.chars=c(1:8,14:25),nchars=1000,nbin=2) {
 #' other operating system it will return \code{'\n'}.
 #'
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @seealso See also \code{\link{file.type}}.
 #' @export
 platform.newline = function(os=.Platform$OS.type) ifelse(grepl("windows",tolower(os)),"\r\n","\n")

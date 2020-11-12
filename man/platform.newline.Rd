@@ -17,6 +17,9 @@ other operating system it will return \code{'\n'}.
 A simple function to determine the appropriate newline string for a given
 operating system.
 }
+\seealso{
+See also \code{\link{file.type}}.
+}
 \author{
 David M. Kaplan \email{dmkaplan2000@gmail.com}
 }

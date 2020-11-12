@@ -2,33 +2,63 @@
 % Please edit documentation in R/utils.R
 \name{is.file.binary}
 \alias{is.file.binary}
-\title{Determine if a file is binary or text}
+\alias{file.type}
+\title{Functions to assess if files are binary, DOS text or UNIX text format}
 \usage{
-is.file.binary(file, bin.chars = c(1:8, 14:25), nchars = 1000, nbin = 2)
+is.file.binary(file, bin.ints = c(1:8, 14:25), nbytes = 1000, nbin = 2)
+
+file.type(file, bin.ints = c(1:8, 14:25), nbytes = 1000, nbin = 2)
 }
 \arguments{
 \item{file}{The path to the file to be examined}
 
-\item{bin.chars}{List of control characters that are to be considered when
-when looking for signs a file is binary. Default includes most ASCII
-control characters except things like NULL, LF, CR and HT that might actually
-appear in an ASCII file.}
+\item{bin.ints}{List of integers with the ASCII values of control characters
+that are to be considered when when looking for signs a file is binary.
+Default includes most ASCII control characters except things like NULL, LF,
+CR and HT that might actually appear in an ASCII file.}
 
-\item{nchars}{Number of bytes to read in from the beginning of the file.}
+\item{nbytes}{Number of bytes to read in from the beginning of the file.}
 
-\item{nbin}{An integer indicating the threshold on the number of control characters
-above which a file is considered binary. Defaults to 2.}
+\item{nbin}{An integer indicating the threshold on the number of control
+characters above which a file is considered binary. Defaults to 2.}
 }
 \value{
-A boolean that will be \code{TRUE} if a file is considered to be binary.
+For \code{is.file.binary}, a boolean value is returned, whereas a
+  list is returned for \code{file.type}.
 }
 \description{
-This function attempts to determine if file is binary or text. It does this
-using a heuristic based on finding at least \code{nbin} ASCII control
-(i.e., non-printing) characters in the first \code{nchars} of the file.
-This works well for standard ASCII text, but I have no idea how it will
-work with complex UTF8 text (e.g., Chinese).
+These functions attempt to determine if a file is binary or text. In
+addition, \code{file.type} attempts to determine the newline character(s)
+used in the file.
+}
+\details{
+A file is assessed to be binary using a heuristic based on finding more than
+\code{nbin} ASCII control (i.e., non-printing) characters in the first
+\code{nbytes} of the file. This works well for standard ASCII text, but it
+may be less effective for complex UTF8 text (e.g., Chinese).
+
+For text files, line endings are assessed by \code{file.type} by searching
+first for DOS line endings (\code{\\r\\n}) in the first \code{nbytes} of the
+input file, and then by searching for UNIX line endings (\code{\\n}). If
+neither is found, then \code{NA_character_} is returned for the line ending.
+}
+\section{Functions}{
+\itemize{
+\item \code{is.file.binary}: A boolean that will be \code{TRUE} if a file is considered to be
+binary.
+
+\item \code{file.type}: Returns a list with up to two elements:
+\code{type} & \code{newline}. \code{type} can either by \code{"binary"} or
+\code{"text"}. \code{newline} will be \code{NULL} for binary files,
+\code{"\\r\\n"} for DOS formatted text files, \code{"\\n"} for UNIX
+formatted text files and \code{NA_character_} for text files without any
+newline characters in the first \code{nbytes} of the file.
+}}
+
+\seealso{
+See also \code{\link{platform.newline}}.
 }
 \author{
 David M. Kaplan \email{dmkaplan2000@gmail.com}
 }
+\concept{binary text tests}

@@ -53,12 +53,13 @@ create_data_chunk_dialog = function (
         shiny::radioButtons("format","Format: ",choices=c("text","binary"),selected="binary",inline=TRUE),
         shiny::radioButtons("encoding","Encoding: ",choices=c("asis","base64","gpg"),select="base64",inline=TRUE)
       ),
-      shiny::uiOutput("gpg_receivers"),
       shiny::fillRow(
         height="40pt",
         shiny::checkboxInput("md5sum","Do MD5 sum check? ",value=TRUE),
         shiny::checkboxInput("encode","Encode the data? ",value=TRUE)
       ),
+      shiny::uiOutput("line_sep"),
+      shiny::uiOutput("gpg_receivers"),
       shiny::textInput("output.var","Output variable name (no quotes): ",placeholder="df",width="100%"),
       shiny::textInput("output.file","Output file name (no quotes): ",placeholder="filepath/filename.ext",
                 width="100%"),
@@ -76,33 +77,50 @@ create_data_chunk_dialog = function (
     output$infobar = shiny::renderUI(shiny::HTML(infobar))
 
     # Add receivers list if GPG chosen
-    shiny::observeEvent(input$encoding,{
-      switch(
-        input$encoding,
-        "gpg" = {
-          # If gpg not installed warned and return to encoding=base64
-          if (!requireNamespace("gpg")) {
-            shiny::showModal(shiny::modalDialog("gpg package required for gpg encoding."))
-            shiny::updateRadioButtons(session,"encoding",selected="base64")
-            return()
-          }
-
-          keys = gpg::gpg_list_keys()
-          output$gpg_receivers = shiny::renderUI(
-            shiny::selectInput("keys","GPG receivers: ",paste(keys$id,keys$name),multiple=TRUE)
-          )
-        },
-        {
-          output$gpg_receivers = shiny::renderUI("")
+    shiny::observeEvent(list(input$encoding,input$encode),{
+      if (input$encode && input$encoding=="gpg") {
+        # If gpg not installed warned and return to encoding=base64
+        if (!requireNamespace("gpg")) {
+          shiny::showModal(shiny::modalDialog("gpg package required for gpg encoding."))
+          shiny::updateRadioButtons(session,"encoding",selected="base64")
+          return()
         }
-      )
+
+        keys = gpg::gpg_list_keys()
+        output$gpg_receivers = shiny::renderUI(
+          shiny::selectInput("keys","GPG receivers: ",paste(keys$id,keys$name),multiple=TRUE)
+        )
+      } else {
+        output$gpg_receivers = shiny::renderUI("")
+      }
+    })
+
+    # If text file, add newline separator to dialog
+    shiny::observeEvent(list(input$filename,input$encoding,input$format),{
+      if (input$format=="text" && input$encoding=="asis") {
+        line.sep = platform.newline()
+        fn = input$filename$datapath
+        if (!is.null(fn)) {
+          ft = file.type(fn)
+          if (ft$type == "text" && !is.na(ft$newline)) {
+            line.sep = ft$newline
+          }
+        }
+
+        line.sep = c(`\r\n`="\\r\\n",`\n`="\\n")[line.sep]
+        output$line_sep = shiny::renderUI(
+          shiny::textInput("line.sep","Newline character(s): ",value=line.sep,width="100%")
+        )
+      } else {
+        output$line_sep = shiny::renderUI("")
+      }
     })
 
     # When data file set, determine defaults
     shiny::observeEvent(input$filename,{
       fn = input$filename$datapath
 
-      isbin = is.file.binary(fn)
+      isbin = file.type(fn)$type == "binary"
       fnext = tolower(tools::file_ext(fn))
 
       shiny::updateRadioButtons(session,"format",selected=ifelse(isbin,"binary","text"))
@@ -189,7 +207,6 @@ create_data_chunk_dialog = function (
           args$output.var=input$output.var
         if (!isemp(input$output.file))
           args$output.file=input$output.file
-
         args$echo=input$echo
 
         if (!isemp(md5sum))
@@ -200,6 +217,10 @@ create_data_chunk_dialog = function (
         if (!isemp(input$eval))
           ev=paste0("eval=",input$eval)
 
+        nl = NULL
+        if (!isemp(input$line.sep))
+          nl=paste0('line.sep="',input$line.sep,'"')
+
         lf = NULL
         if (!isemp(input$loader.function))
           lf=paste0("loader.function=",input$loader.function)
@@ -208,7 +229,7 @@ create_data_chunk_dialog = function (
         if (!isemp(input$chunk_options_string))
           co = input$chunk_options_string
 
-        co=paste(c(ev,lf,co),collapse=",")
+        co=paste(c(ev,nl,lf,co),collapse=",")
 
         if (!isemp(co))
           args$chunk_options_string = co

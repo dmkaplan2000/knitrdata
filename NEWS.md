@@ -2,7 +2,8 @@ knitrdata 0.5.3
 ---------------------------------------------------------------------
 
 - Better tests and documentation of text data + md5sum checks
-- Fix text file issues with remove and insert RStudio addins
+- Fixed text file issues with remove and insert RStudio addins
+- Added newline character determination to text file chunk insert via addin
 
 knitrdata 0.5.2
 ---------------------------------------------------------------------
