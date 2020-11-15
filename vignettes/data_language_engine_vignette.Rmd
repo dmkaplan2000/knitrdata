@@ -28,13 +28,19 @@ knitr::opts_knit$set(root.dir = td)
 
 This document provides a brief introduction to how to use the `knitrdata` package to create standalone Rmarkdown documents. For examples of Rmarkdown documents using the package, please consult the `examples` directory provided with the package. There is also an [instructional video](#video) for how to use the package.
 
-## Conceptual overview
+## Overview
 
-Sometimes it would be useful to make completely standalone Rmarkdown documents that do not depend on data in external files. One important example of this is scientific publications written in Rmarkdown for which we often would like to supply the source document with the data to ensure results are reproducible. The `knitrdata` package addresses this need by creating a mechanism for incorporating arbitrary text and binary data in Rmarkdown documents. It works conceptually and technically in a manner that is very similar to how images and other binary data are incorporated into standalone HTML web pages: data are incorporated into specially delimited chunks that consist of the data themselves plus a small bit of header information explaining how the data are to be processed. Text data (e.g., CSV data tables, BibTeX references, LaTeX style files) is typically incorporated in chunks as is, whereas binary data (e.g., RDS files, images, NetCDF files) is encoded as text using one of two standard encoding schemes. During knitting of the Rmarkdown document, chunk data is decoded if necessary, after which it can either be loaded into the Rmarkdown R session or saved to an external file.
+Sometimes it would be useful to make completely standalone Rmarkdown documents that do not depend on data in external files. One important example of this is scientific publications written in Rmarkdown for which we often would like to supply the source document with the data to ensure results are reproducible. The `knitrdata` package addresses this need by creating a mechanism for incorporating arbitrary text and binary data in Rmarkdown documents. It works conceptually and technically in a manner that is very similar to how images and other binary data are incorporated into standalone HTML web pages and email attachments: data are incorporated into specially delimited chunks that consist of the data themselves plus a small bit of header information explaining how the data are to be processed. Text data (e.g., CSV data tables, BibTeX references, LaTeX style files) is typically incorporated in chunks as is, whereas binary data (e.g., RDS files, images, NetCDF files) is encoded as text using one of two standard encoding schemes. During knitting of the Rmarkdown document, chunk data is decoded if necessary, after which it can either be loaded into the Rmarkdown R session or saved to an external file.
 
-`knitrdata` achieves this by extending `knitr` to provide a new `data` language engine. Instead of putting code inside `data` chunks, one puts the contents of the data file that one wishes to use in your Rmarkdown document. For binary data, the package currently supports two standard encoding formats: `base64`, the standard binary encoding format used (behind the scenes) for things like email attachments and standalone HTML web pages; and `gpg`, a well-known encryption algorithm that prevents data from being accessed by users without the appropriate decryption key. The latter option requires that a GPG keyring for managing encryption keys be installed and properly configured.
+`knitrdata` achieves this by extending `knitr` to provide a new `data` language engine (i.e., a new chunk type). Instead of putting code inside `data` chunks, one puts the contents of the data file that one wishes to use in your Rmarkdown document. For binary data, the package currently supports two standard encoding formats: `base64`, the standard binary encoding format used (behind the scenes) for things like email attachments and standalone HTML web pages; and `gpg`, a well-known encryption algorithm that prevents data from being accessed by users without the appropriate decryption key. The latter option requires that a GPG keyring for managing encryption keys be installed and properly configured.
 
 `data` chunks do not produce output in the form of text or figures as most code chunks do. Instead, the decoded contents of the chunk are either returned as a variable in the R workspace or saved to an external file.
+
+## Instructional video {#video}
+
+There is an instructional video screencast demonstrating the use of `knitrdata` in Rstudio. It is available on [youtube](https://youtu.be/xX4YRAXYFxE) or by clicking the video insert below.
+
+<iframe width="684" height="385" src="https://www.youtube.com/embed/xX4YRAXYFxE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Installation & getting started
 
@@ -67,9 +73,9 @@ After the package is installed, `data` chunks can be incorporated in the documen
 
 ## Encoding data {#encode}
 
-Both text and binary data files can be encoded, but encoding is only required or regularly used for binary data. Two encoding formats are currently implemented: `base64`, used for non-sensitive data; and `gpg`, allowing one to encrypt data so that only users with the decryption key have access. The latter option requires that a GPG keyring be installed and properly configured.
+Both text and binary data files can be encoded, but encoding is only required for binary data. Two encoding formats are currently implemented: `base64`, used for non-sensitive data; and `gpg`, allowing one to encrypt data so that only users with the decryption key have access. The latter option requires that a GPG keyring be installed and properly configured.
 
-Two helper functions, `data_encode` and `data_decode`, are included in the package to facilitate encoding and decoding of data files. These are basically wrapper functions for functionality provided by the [xfun](https://cran.r-project.org/package=xfun) and [gpg](https://cran.r-project.org/package=gpg) packages. To demonstrate their use, we will use the following simple data frame that exists in both text (CSV) and binary (RDS) formats:
+Two helper functions, `data_encode` and `data_decode`, are included in the package to facilitate encoding and decoding of data files. These are basically wrapper functions for functionality provided by the [xfun](https://cran.r-project.org/package=xfun) and [gpg](https://cran.r-project.org/package=gpg) packages for `base64` and `gpg` encoding, respectively. To demonstrate their use, we will use the following simple data frame that exists in both text (CSV) and binary (RDS) formats:
 
 ```{r}
 D = data.frame(a=1:3,b=letters[1:3])
@@ -88,7 +94,7 @@ This CSV text will be used as is in `data` chunks (see ["Data chunks"](#chunks) 
 
 ### Base64
 
-Base64 encoding is the standard encoding to be used for all non-sensitive binary data. It is based on translating 6-bits of information into one of 64 alphanumeric and symbolic characters.
+Base64 encoding is a widely-used, standard encoding to be used for all non-sensitive binary data. It is based on translating 6-bits of information into one of 64 alphanumeric and symbolic characters.
 
 Encoding in base64 using the `data_encode` function works as follows:
 
@@ -109,7 +115,7 @@ data_encode("test.RDS","base64",output="test.RDS.base64")
 cat(readLines("test.RDS.base64"),sep="\n")
 ```
 
-Though it is rarely necessary to call the `data_decode` function directly when working with the `data` chunks in Rmarkdown documents, bas64 encoded data can be decoded as follows:
+Though it is rarely necessary to call the `data_decode` function directly when working with the `data` chunks in Rmarkdown documents, `base64` encoded data can be decoded as follows:
 
 ```{r}
 rds = data_decode(b64,"base64",as_text=FALSE)
@@ -146,7 +152,7 @@ y = readRDS("test_output.RDS")
 y
 ```
 
-Note that there is no need to supply the receiver ID when decoding because the appopriate private key is in the keyring.
+Note that there is no need to supply the receiver ID when decoding because the appropriate private key is in the keyring. When decoding, the `gpg` package or keyring may prompt for a password to unlock the decryption key if the key is password protected.
 
 We can delete the public-private key pair we created for this exercise from our keyring as follows:
 
@@ -273,7 +279,7 @@ The *data* inside a text `data` chunk does not have to be scientific data. It ca
 `r ''````
 ````
 
-This will generate the file `references.bib` from the chunk contents. Note that one uses `output.file` instead of `output.var` to save the contents to a file. Also note that textual output to a file can also be achieved using the `cat` language environment as described in the *R Markdown Cookbook* [here](https://bookdown.org/yihui/rmarkdown-cookbook/eng-cat.html), though the `data` language engine provides more options for the handling of chunk contents (for example, one can use `base64` encoding to embed Rmarkdown documents within Rmarkdown documents).
+This will generate the file `references.bib` from the chunk contents. Note that one uses `output.file` instead of `output.var` to save the contents to a file. Textual output to a file can also be achieved using the `cat` language environment as described in the *R Markdown Cookbook* [here](https://bookdown.org/yihui/rmarkdown-cookbook/eng-cat.html), though the `data` language engine provides more options for the handling of chunk contents (for example, one can use `base64` encoding to embed Rmarkdown documents within Rmarkdown documents).
 
 As style files like the BibTeX file described above are only used by knitr/pandoc in the final formatting phase of generating an output document, these files can be generated from `data` chunks during the initial phases of the knitting. This allows them to be stored inside the Rmarkdown document itself, with no need for the external file prior to knitting.
 
@@ -590,7 +596,7 @@ gpg::gpg_delete(id,secret=TRUE)
 
 ### Helper functions for creating and inserting data chunks
 
-For small data chunks, one can copy-paste the (encoded) data from the command line or from a file into a Rmarkdown document. For larger data chunks, this can be awkward, so `knitrdata` includes two helper functions for creating and inserting `data` chunks into Rmarkdown documents: `create_chunk` and `insert_chunk`. We can combine these functions with `data_encode` to generate the base64 `data` chunk described above. First, we use `create_chunk` to generate the chunk:
+For small data chunks, one can copy-paste the (encoded) data from the command line or from a file into a Rmarkdown document. For larger data chunks, this can be awkward, so `knitrdata` includes two command-line helper functions for creating and inserting `data` chunks into Rmarkdown documents, as well as 3 [RStudio Addins](#addins) that facilitate creating data chunks. The command-line functions are `create_chunk` and `insert_chunk`. We can combine these functions with `data_encode` to generate the base64 `data` chunk described above. First, we use `create_chunk` to generate the chunk:
 
 ```{r include=FALSE}
 rmarkdown::draft("example.Rmd","github_document","rmarkdown",
@@ -623,7 +629,7 @@ This will insert the new `data` chunk at line 11 in the Rmarkdown document.
 
 ### Data integrity checks using md5sum
 
-Using the procedures above should assure that data inside `data` chunks do not have errors. Nevertheless, there is always the possibility that a stray keystroke would modify the data, particularly for binary data encoded as text. To protect against this, `data` chunks can have a `md5sum` chunk option that will be used to test if the decoded data matches expectations. A MD5 sum is essentially a very large number (typically encoded in hexadecimal) derived from a file's contents that has a vanishingly small probability of being equal to the the equivalent number derived from a *different* file's contents. If two files have the same MD5 sum, they are almost certainly identical.
+Using the procedures above should assure that data inside `data` chunks do not have errors. Nevertheless, there is always the possibility that a stray keystroke would modify the data, particularly for binary data encoded as text. To protect against this, `data` chunks can have a `md5sum` chunk option that will be used to test if the decoded data matches expectations. A MD5 sum is essentially a very large number (typically encoded in hexadecimal) derived from a file's contents that has a vanishingly small probability of being equal to the equivalent number derived from a *different* file's contents. If two files have the same MD5 sum, they are almost certainly identical.
 
 To use the `md5sum` chunk option, one must first determine the MD5 sum of the *decoded* source data:
 
@@ -650,7 +656,7 @@ that are not encoded in any special way.
 
 ### Reading a data chunk from an external file
 
-One disadvantage of using `data` chunks is that it can make Rmarkdown files long and difficult to navigate if you use lots of data. Rstudio can help with this problem by allowing one to hide the contents of a chunk and by using navigation tools to jump between section. In addition, using `insert_chunk` to place a `data` chunk inside a document as the last step before public diffusion may avoid having to work extensively with the large file. Nevertheless, large file size can still be a problem. To facilitate the initial construction of standalone Rmarkdown documents, data chunks can be read from external files using the `external.file` chunk option. The external file must contain the *encoded* chunk contents exactly as they would appear in a `data` chunk. The intended use of this option is that large data chunks would be placed initially in external files, but the contents of these files would be placed directly in the `data` chunks before sharing the document with others. 
+One disadvantage of using `data` chunks is that it can make Rmarkdown files long and difficult to navigate if you use lots of data. Rstudio can help with this problem by allowing one to hide the contents of a chunk and by using navigation tools to jump between sections. In addition, using `insert_chunk` or the [RStudio Addins](#addins) to place a `data` chunk inside a document as the last step before public diffusion may avoid having to work extensively with the large file. Nevertheless, large file size can still be a problem. To facilitate the initial construction of standalone Rmarkdown documents, data chunks can be read from external files using the `external.file` chunk option. The external file must contain the *encoded* chunk contents exactly as they would appear in a `data` chunk. The intended use of this option is that large data chunks would be placed initially in external files, but the contents of these files would be placed directly in the `data` chunks before sharing the document with others. 
 
 ```{r}
 writeLines(c("This is from an external file.","It has two lines."),
@@ -671,11 +677,35 @@ Content will be ignored with a warning!
 cat(ext)
 ```
 
-## Rstudio Addins for working with data chunks
+### Extra language engines for CSV and RDS data
 
-The steps described above for encoding data, creating data chunks and inserting them in Rmarkdown documents have been combined into a set of  `Shiny` applications:
+As it is very common for data chunks to be used for CSV or RDS data, additional shorthand language engines are included in the `knitrdata` package for working with these data. These chunks types are `csv`, `csv2` and `rds` for working with comma-separated CSV data, semicolon-separated CSV data and RDS data, respectively. These language engines are implemented as wrappers for the standard `data` language engine, but with the `loader.function` option predefined to be `read.csv`, `read.csv2` and `readRDS`, respectively. Extra parameters for these loader functions can be given directly as chunk options, as well as via the `loader.ops` chunk option. 
 
-* `create_data_chunk_dialog()` for creating a data chunk and returning it to the command line after the user specifies a data file and a set of options in the `Shiny` gadget
+As an example, one could load CSV data that has no header and that uses a non-standard delimiter and comma as the decimal point indicator as follows:
+
+````markdown
+`r ''````{csv2 output.var = "d", sep="|", header=FALSE}
+a|1,1
+b|2,2
+c|3,3
+`r ''````
+````
+
+```{csv2 output.var = "d", sep="|", header=FALSE,echo=FALSE}
+a|1,1
+b|2,2
+c|3,3
+```
+
+```{r}
+d
+```
+
+## Rstudio Addins for working with data chunks {#addins}
+
+The steps described above for encoding data, creating data chunks and inserting them in Rmarkdown documents have been combined into a set of GUI `Shiny` applications that assist in creating and/or removing `data` chunks:
+
+* `create_data_chunk_dialog()` for creating a data chunk and returning it to the command line after the user specifies a data file and a set of options
 * `insert_data_chunk_dialog()`, which has the same functionality as `create_data_chunk_dialog()`, except that the data chunk that is created is inserted at the cursor location in the active source document in the Rstudio editor
 * `remove_chunks_dialog()`, which shows a data table listing all chunks in the active source document in the Rstudio editor, allowing one to select a set of chunks (i.e., rows) and then delete those chunks with the click of a button
 
@@ -699,13 +729,7 @@ One `knitrdata` feature that may at first glance seem to be of little value is t
 
 ## When not to use data chunks
 
-Though the `knitrdata` package can be a powerful tool, it can also be abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. The options to collapse `data` chunks in Rstudio, use Rstudio's navigation tools, use `knitrdata`'s helper functions for `data` chunk creation and the use of the `external.file` chunk option all can reduce the importance of these issues, but including very large amounts of data in Rmarkdown documents is unlikely to be optimal. In particular, Rstudio currently will not open a Rmarkdown documents larger than 5 MB in size, though larger documents can still be opened by other editors and rendering from the command line using `rmarkdown::render` is always possible. Basic prudence should be used when deciding what and how much data to include in Rmarkdown documents.
-
-## Instructional video {#video}
-
-There is an instructional video screencast demonstrating the use of `knitrdata` in Rstudio. It is available on [youtube](https://youtu.be/xX4YRAXYFxE) or by clicking the video insert below.
-
-<iframe width="684" height="385" src="https://www.youtube.com/embed/xX4YRAXYFxE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+Though the `knitrdata` package can be a powerful tool, it can also be abused by placing very large amounts of data inside Rmarkdown files. This will make the documents very large and difficult to navigate. The options to collapse `data` chunks in Rstudio, use Rstudio's navigation tools, use `knitrdata`'s helper functions for `data` chunk creation and the use of the `external.file` chunk option all can reduce the importance of these issues, but including very large amounts of data in Rmarkdown documents is unlikely to be optimal. In particular, Rstudio currently will not open Rmarkdown documents larger than 5 MB in size, though larger documents can still be opened by other editors and rendering from the command line using `rmarkdown::render` is always possible. Basic prudence should be used when deciding what and how much data to include in Rmarkdown documents.
 
 ## Tips & tricks {#tt}
 
@@ -720,10 +744,15 @@ You can use a data chunk to load numeric vector data as follows:
 `r ''````
 
 `r ''````{r}
-v = as.numeric(strsplit(v,",")[[1]])
+f = function(v) as.numeric(strsplit(v,",")[[1]])
+v=f(v)
 v
 `r ''````
 ````
+
+```{r, include=FALSE}
+f = function(v) as.numeric(strsplit(v,",")[[1]])
+```
 
 ```{data output.var="v",line.sep="",echo=FALSE}
 1.2,3.4,5.6,
@@ -731,10 +760,8 @@ v
 ```
 
 ```{r echo=FALSE}
-v = as.numeric(strsplit(v,",")[[1]])
-v
+f(v)
 ```
-
 
 ### Conditional text in Rmarkdown with missing values {#condtext}
 
@@ -775,13 +802,13 @@ Will lead to `%d` being replaced with `9`.
 
 ### Unencoded text chunks and md5sum
 
-Using `md5sum` checks on text chunks that are not encoded (i.e., `'asis'`) can be tricky because when the chunk is processed, an operating-system-dependent newline character will be added to each line, including the final line. This will potentially make the md5sum check fail if the file was created on a different operating system or the final line lacked a newline character. To have the best possible chances of success when using `md5sum` checks with unencoded text files, follow these steps:
+Using `md5sum` checks on text chunks that are not encoded (i.e., `'asis'`) can be tricky because when the chunk is processed, by default an operating-system-dependent newline character will be added to each line, including the final line. This will potentially make the md5sum check fail if the file was created on a different operating system or the final line lacked a newline character. To have the best possible chances of success when using `md5sum` checks with unencoded text files, follow these steps:
 
 * Assure that the original external text file has a newline character on the last line (i.e., the file ends on a new empty line)
 * If you do not care about cross-platform compatibility, then just make sure that the original external text file used to calculate the `md5sum` is formatted as is standard for your operating system (i.e., newlines with `'\r\n'` on DOS/Windows, and newlines with `'\n'` on all other operating systems)
 * For cross-platform compatibility, specify the `line.sep` chunk option to explicitly set the newline format to use. For example, you can specify chunk option `line.sep="\r\n"` to force the `data` language engine to output DOS formatted text files
 
-If you follow these steps, `md5sum` checks of text chunk contents should work.
+If you follow these steps, `md5sum` checks of text chunk contents should work. The `Insert filled data chunk` RStudio addin will attempt to set the `line.sep` chunk option to match that of the incoming text file so that one normally should not need to worry about the text file format.
 
 If for some reason these steps are impractical, one can always use a different method to check the validity of chunk contents. For example, the following would do a *post hoc* check of the validity of loaded data using a SHA1 hash:
 
@@ -812,20 +839,19 @@ if (digest::sha1(d) != "a5918a84b39f0b6f42e9ab4a19771a7d6a5777a0")
 ```
 
 
-These concerns do not apply to `base64` or `gpg` encoded text files as the exact text file contents are encoded in the chunk contents.
+These concerns do not apply to `base64` or `gpg` encoded text files as the exact text file contents, including line endings, are encoded in the chunk contents.
 
 ### Workarounds for GPG data chunk error: *Password callback did not return a string value*
 
-If one includes in a Rmarkdown document a GPG-encoded data chunk that uses a password-protected 
-GPG key, then knitting may fail with the error `Password callback did not return a string value`. This is because knitting occurs in a non-interactive Rmarkdown session and, therefore, `gpg::gpg_decrypt` is unable to open the password entry dialog during the knitting process. The `gpg` package does not currently include another mechanism for providing the key password, but one can work around this problem by using any mechanism to temporarily store the key password in the GPG keyring manager. This can generally be achieved by decrypting something that was encrypted by the same key that was used to encrypt the chunk. If the password is available to the keyring, then `gpg::gpg_decrypt` will not attempt to open the password entry dialog, thereby avoiding the problem.
+If one includes in a Rmarkdown document a GPG-encoded data chunk that uses a password-protected GPG key, then knitting may fail with the error `Password callback did not return a string value`. This is because knitting occurs in a non-interactive Rmarkdown session and, therefore, `gpg::gpg_decrypt` is unable to open the password entry dialog during the knitting process. The `gpg` package does not currently include another mechanism for providing the key password, but one can work around this problem by using any mechanism to temporarily store the key password in the GPG keyring manager. This can generally be achieved by decrypting something that was encrypted by the same key that was used to encrypt the chunk. If the password is available to the keyring, then `gpg::gpg_decrypt` will not attempt to open the password entry dialog, thereby avoiding the problem.
 
 If working in Rstudio, then the simplest way to work around this problem is by manually executing the chunk that produced the error using the `Run Current Chunk` button. Provided that the `knitrdata` package has been loaded/attached in the interactive R session, then this will open the password dialog, allowing one to enter the password and decrypt the chunk contents. After this, the password should be (temporarily) saved in the keyring and the document should knit successfully.
 
-As a final workaround to this problem, one can remove the password from the relevant GPG key in the keyring manager before knitting.
+As a final workaround to this problem, one can remove the password from the relevant GPG key in the keyring manager before knitting, though this is not recommended.
 
 ## Full list of data chunk options
 
-In addition to the standard `eval` and `echo` chunk options, `knitrdata` supports the following chunk options:
+In addition to the standard `eval` and `echo` chunk options, `data` chunks supports the following chunk options:
 
 ```{data output.var="t",loader.function=read.csv,loader.ops=list(sep="|",check.names=FALSE),echo=FALSE}
 Chunk option|Description
@@ -846,3 +872,4 @@ Chunk option|Description
 knitr::kable(t,caption="Full list of knitrdata chunk options.")
 ```
 
+`csv`, `csv2` and `rds` chunks support these same options, but `format` and `loader.function` are typically not used and additional arguments to the predefined loader functions can be passed directly as chunk options.
