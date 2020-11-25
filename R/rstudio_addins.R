@@ -34,7 +34,8 @@ firstword = function(x,split=" ") sapply(strsplit(x,split=split),function(y) y[1
 #' @encoding UTF-8
 create_data_chunk_dialog = function (
   title="Data chunk creator",
-  infobar="<big><b>Fill out, then click above to create chunk</b></big>") {
+  infobar="<big><b>Fill out, then click above to create chunk</b></big>"
+  ) {
   pkgs = c("shiny","miniUI")
   if (!all(sapply(pkgs,requireNamespace,quietly=TRUE)))
     stop("This function requires that the following packages be installed: ",
@@ -248,7 +249,7 @@ create_data_chunk_dialog = function (
 
   chunk = shiny::runGadget(
     app=ui, server=server,
-    viewer = shiny::dialogViewer(title))
+    viewer = shiny::dialogViewer(title,width=600,height=900))
 
   return(invisible(chunk))
 }
