@@ -95,9 +95,9 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
 
 #' Tools for working with existing chunks in Rmarkdown documents
 #'
-#' These helper functions allow one to identify all the chunks in a Rmarkdown document
-#' and split the document into pieces by a specific chunk so that one can either work
-#' with the chunk contents or remove the chunk.
+#' These helper functions allow one to identify all the chunks in a Rmarkdown document,
+#' split the document into pieces by a specific chunk so that one can either work
+#' with the chunk contents or remove the chunk, and remove several chunks at once.
 #'
 #' \code{list_rmd_chunks} takes a Rmarkdown document and returns
 #' a \code{data.frame} listing the essential information of every chunk, including
@@ -108,6 +108,9 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
 #' the chunk header, the chunk contents, the chunk tail and the part after the chunk.
 #' These can then be used to either work with the chunk contents or remove the chunk from
 #' the Rmarkdown document.
+#'
+#' \code{remove_chunks} removes several chunks, designated by their text or numeric labels,
+#' all at once from a Rmarkdown document.
 #'
 #' Note that the regular expression used by default to identify chunk starts is not
 #' guaranteed to be exactly the same as that used by \code{knitr} and may not work
@@ -120,8 +123,6 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
 #' @param file Path to file containing chunk contents. Ignored if \code{text}
 #'   argument supplied. As a consequence, this means that all arguments must be named
 #'   if the \code{file} argument is supplied.
-#' @param chunk_label Character string giving the chunk label or the chunk number
-#'   (as returned by \code{list_rmd_chunks}.
 #' @param chunk.start.pattern Regular expression used to identify chunk starts. The
 #'   default looks for lines beginning with three back quotes, followed by curly braces
 #'   with some sort of text between them and then only spaces till the end of the line.
@@ -181,17 +182,17 @@ list_rmd_chunks = function(text=readLines(file),file=NULL,
   return(res)
 }
 
-#' @param \dots Additional arguments to be passed from \code{split_rmd_by_chunk}
-#'   to \code{list_rmd_chunks} (e.g., \code{chunk.start.pattern}).
+#' @param chunk_label Character string giving the chunk label or the chunk number
+#'   (as returned by \code{list_rmd_chunks}.
+#' @param \dots Additional arguments to be passed to \code{list_rmd_chunks}
+#'   (e.g., \code{chunk.start.pattern}).
 #'
 #' @export
 #'
 #' @describeIn list_rmd_chunks Returns a list with the contents of the Rmarkdown
-#'   document broken into
-#'   4 pieces: pre-chunk, chunk header, chunk contents, chunk tail, and post-chunk.
+#'   document broken into 4 pieces: pre-chunk, chunk header, chunk contents,
+#'   chunk tail, and post-chunk.
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
-#'
-#' @example tests/test.create_chunks.R
 split_rmd_by_chunk = function(text=readLines(file),chunk_label,file=NULL,...) {
   ch = list_rmd_chunks(text=text,...)
 
@@ -215,4 +216,44 @@ split_rmd_by_chunk = function(text=readLines(file),chunk_label,file=NULL,...) {
 
   return(list(pre_chunk=pre_chunk,header=header,content=content,
               tail=tail,post_chunk=post_chunk))
+}
+
+#' @param chunk_labels A vector of numeric or character chunk labels
+#'   (as returned by \code{list_rmd_chunks}.
+#' @param output.file Name of a file where Rmd document with desired chunks removed is to be saved.
+#'
+#' @export
+#'
+#' @describeIn list_rmd_chunks Silently returns a character vector with the contents of
+#'   the Rmd file after having removed the desired chunks
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+remove_chunks = function(text=readLines(file),chunk_labels,file=NULL,output.file=NULL,...) {
+  ch = list_rmd_chunks(text=text,...)
+
+  # Convert character chunk labels into numbers
+  # Warn if any unidentified chunks
+  if (is.character(chunk_labels)) {
+    cl = chunk_labels
+    chunk_labels = which(ch$label %in% chunk_labels)
+    sd = setdiff(cl,ch$label[chunk_labels])
+    if (!length(sd)==0)
+      warning("The following chunk labels were not found:",paste0('"',sd,'"',collapse=", "))
+  }
+
+  # Return immediately if no chunk labels around
+  if (length(chunk_labels)==0)
+    return(invisible(text))
+
+  # Get full list of line numbers to remove
+  se = as.data.frame(t(ch[chunk_labels,c("start","end"),drop=FALSE]))
+  lns = do.call(c,lapply(se,function(x) x[1]:x[2]))
+
+  # Remove rows
+  text = text[-1*lns]
+
+  # Write to output if needed
+  if (!is.null(output.file))
+    writeLines(text=text,con=output.file)
+
+  return(invisible(text))
 }
