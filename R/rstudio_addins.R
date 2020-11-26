@@ -2,7 +2,7 @@
 
 # Some minor helper functions
 isemp = function(x) is.null(x) || (x=="")
-firstword = function(x,split=" ") sapply(strsplit(x,split=split),function(y) y[1])
+firstword = function(x,split="( |\t|\r?\n)") sapply(strsplit(x,split=split),function(y) y[1])
 
 # Function for creating a data chunk --------------------
 
@@ -194,7 +194,7 @@ create_data_chunk_dialog = function (
           chunk = readLines(fn)
         }
 
-        chunk = do.call(c,strsplit(chunk,"\r?\n")) # Break into lines
+        chunk = readLines(con=textConnection(chunk)) # Break into lines
         chunk_label = NULL
         if (!isemp(input$chunk_label))
           chunk_label = input$chunk_label
