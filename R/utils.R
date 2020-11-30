@@ -89,3 +89,45 @@ file.type = function(file,bin.ints=c(1:8,14:25),nbytes=1000,nbin=2) {
 #' @seealso See also \code{\link{file.type}}.
 #' @export
 platform.newline = function(os=.Platform$OS.type) ifelse(grepl("windows",tolower(os)),"\r\n","\n")
+
+# Help function to try to get gpg key password into keyring memory -------
+
+#' Functions that attempts to unlock a gpg key for decryption
+#'
+#' This function will attempt to unlock a specific GPG key by first encrypting a
+#' small amount of information using the (public) key and then immediately
+#' decrypting it using the (private) key, thereby causing the keyring to
+#' temporarily store the key passphrase. This can be helpful if one is trying
+#' to knit a document with encrypted data chunks, but the key for those
+#' data chunks is locked with a passphrase. See the package vignette section
+#' \code{Workarounds for GPG data chunk error: Password callback did not return a string value}
+#' for more details.
+#'
+#' @param id Identifier of the GPG key
+#' @param name Name associated with the desired GPG key
+#' @param email Email associated with the desired GPG key
+#'
+#' @return Will return the identifier of the GPG key that was unlocked.
+#'
+#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
+#' @seealso See also \code{\link{data_encode}}, \code{\link[gpg]{gpg_encrypt}}.
+#' @export
+unlock_gpg_key_passphrase = function(
+  id=ifelse(is.null(name),
+            ifelse(is.null(email),NULL,
+                   gpg::gpg_list_keys()$id[gpg::gpg_list_keys()$email==email]),
+            gpg::gpg_list_keys()$id[gpg::gpg_list_keys()$name==name]),
+  name=NULL,email=NULL) {
+  if (is.null(id) || length(id)>1)
+    stop("No id or multiple ids given.")
+
+  tf = tempfile()
+  on.exit(file.remove(tf))
+  cat("hi",file=tf)
+  data_decode(
+    data_encode(tf,"gpg",options=list(receiver=id)),
+    "gpg"
+  )
+
+  return(id)
+}

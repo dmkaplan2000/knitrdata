@@ -3,6 +3,7 @@
 \name{list_rmd_chunks}
 \alias{list_rmd_chunks}
 \alias{split_rmd_by_chunk}
+\alias{remove_chunks}
 \title{Tools for working with existing chunks in Rmarkdown documents}
 \usage{
 list_rmd_chunks(
@@ -13,62 +14,85 @@ list_rmd_chunks(
 )
 
 split_rmd_by_chunk(text = readLines(file), chunk_label, file = NULL, ...)
+
+remove_chunks(
+  text = readLines(file),
+  chunk_labels,
+  file = NULL,
+  output.file = NULL,
+  ...
+)
 }
 \arguments{
-\item{text}{Character vector with contents of chunk, one element per line of text.}
+\item{text}{Character vector with contents of chunk, one element per line of
+text. If the character vector has just a single element, then an attempt
+will be made to split it into lines using \code{readLines}.}
 
 \item{file}{Path to file containing chunk contents. Ignored if \code{text}
-argument supplied. As a consequence, this means that all arguments must be named
-if the \code{file} argument is supplied.}
+argument supplied. As a consequence, this means that all arguments must be
+named if the \code{file} argument is supplied.}
 
-\item{chunk.start.pattern}{Regular expression used to identify chunk starts. The
-default looks for lines beginning with three back quotes, followed by curly braces
-with some sort of text between them and then only spaces till the end of the line.
-This should generally work, but if the Rmarkdown document has
-chunks that have unusual headers, then this argument can be useful. In particular, if
-the document has chunks that begin without curly braces, these will not be recognized.}
+\item{chunk.start.pattern}{Regular expression used to identify chunk starts.
+The default looks for lines beginning with three back quotes, followed by
+curly braces with some sort of text between them and then only spaces till
+the end of the line. This should generally work, but if the Rmarkdown
+document has chunks that have unusual headers, then this argument can be
+useful. In particular, if the document has chunks that begin without curly
+braces, these will not be recognized.}
 
-\item{chunk.end.pattern}{Regular expression used to identify the chunk end. Default
-should generally work.}
+\item{chunk.end.pattern}{Regular expression used to identify the chunk end.
+Default should generally work.}
 
 \item{chunk_label}{Character string giving the chunk label or the chunk number
 (as returned by \code{list_rmd_chunks}.}
 
-\item{\dots}{Additional arguments to be passed from \code{split_rmd_by_chunk}
-to \code{list_rmd_chunks} (e.g., \code{chunk.start.pattern}).}
+\item{\dots}{Additional arguments to be passed to \code{list_rmd_chunks}
+(e.g., \code{chunk.start.pattern}).}
+
+\item{chunk_labels}{A vector of numeric or character chunk labels
+(as returned by \code{list_rmd_chunks}.}
+
+\item{output.file}{Name of a file where Rmd document with desired chunks removed is to be saved.}
 }
 \description{
-These helper functions allow one to identify all the chunks in a Rmarkdown document
-and split the document into pieces by a specific chunk so that one can either work
-with the chunk contents or remove the chunk.
+These helper functions allow one to identify all the chunks in a Rmarkdown
+document, split the document into pieces by a specific chunk so that one can
+either work with the chunk contents or remove the chunk, and remove several
+chunks at once.
 }
 \details{
-\code{list_rmd_chunks} takes a Rmarkdown document and returns
-a \code{data.frame} listing the essential information of every chunk, including
+\code{list_rmd_chunks} takes a Rmarkdown document and returns a
+\code{data.frame} listing the essential information of every chunk, including
 chunk type (language engine), label and start and end line numbers.
 
-\code{split_rmd_by_chunk} takes a Rmarkdown document and a chunk label or number and
-returns the Rmarkdown document split into 4 pieces: the part before the chunk,
-the chunk header, the chunk contents, the chunk tail and the part after the chunk.
-These can then be used to either work with the chunk contents or remove the chunk from
-the Rmarkdown document.
+\code{split_rmd_by_chunk} takes a Rmarkdown document and a chunk label or
+number and returns the Rmarkdown document split into 4 pieces: the part
+before the chunk, the chunk header, the chunk contents, the chunk tail and
+the part after the chunk. These can then be used to either work with the
+chunk contents or remove the chunk from the Rmarkdown document.
 
-Note that the regular expression used by default to identify chunk starts is not
-guaranteed to be exactly the same as that used by \code{knitr} and may not work
-if the Rmarkdown document has unusual chunks. In particular, each chunk must have
-the chunk type and chunk options enclosed in curly braces. If code chunks exist without
-curly braces, then these will generally be ignored, but they could potentially cause
-problems in unusual cases.
+\code{remove_chunks} removes several chunks, designated by their text or
+numeric labels, all at once from a Rmarkdown document.
+
+Note that the regular expression used by default to identify chunk starts is
+not guaranteed to be exactly the same as that used by \code{knitr} and may
+not work if the Rmarkdown document has unusual chunks. In particular, each
+chunk must have the chunk type and chunk options enclosed in curly braces. If
+code chunks exist without curly braces, then these will generally be ignored,
+but they could potentially cause problems in unusual cases.
 }
 \section{Functions}{
 \itemize{
-\item \code{list_rmd_chunks}: Returns a data frame with 4 columns:
-the chunk type, the chunk label, the line number of the beginning of the chunk
-and the line number of the end of the chunk.
+\item \code{list_rmd_chunks}: Returns a data frame with 4 columns: the chunk
+type, the chunk label, the line number of the beginning of the chunk and
+the line number of the end of the chunk.
 
 \item \code{split_rmd_by_chunk}: Returns a list with the contents of the Rmarkdown
-document broken into
-4 pieces: pre-chunk, chunk header, chunk contents, chunk tail, and post-chunk.
+document broken into 4 pieces: pre-chunk, chunk header, chunk contents,
+chunk tail, and post-chunk.
+
+\item \code{remove_chunks}: Silently returns a character vector with the contents of
+the Rmd file after having removed the desired chunks
 }}
 
 \examples{
@@ -87,23 +111,7 @@ if (file.exists("test.create_chunks.Rmd"))
 rmarkdown::draft("test.create_chunks.Rmd","github_document","rmarkdown",
                  edit=FALSE)
 
-# Create some binary data
-x = data.frame(a=1:10,b=(1:10)^2)
-saveRDS(x,"test.create_chunks.RDS")
-
-# Push chunks into Rmarkdown document
-# Insert in reverse order to not have to figure out line number
-txt = create_chunk("x\nplot(b~a,data=x)",chunk_type="r") \%>\%
-  insert_chunk(11,rmd.file="test.create_chunks.Rmd")
-txt = data_encode("test.create_chunks.RDS","base64") \%>\%
-  create_chunk(output.var="x",format="binary",loader.function=readRDS) \%>\%
-  insert_chunk(11,txt)
-txt = create_chunk("library(knitrdata)",chunk_type="r") \%>\%
-  insert_chunk(11,txt)
-
-writeLines(txt,"test.create_chunks.Rmd")
-
-# List all chunks in documents
+# List all chunks in document
 chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
 chunklst
 
@@ -116,30 +124,14 @@ writeLines(txt,"test.create_chunks.Rmd")
 chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
 chunklst
 
-# Render document to test
-if (rmarkdown::pandoc_available(version="1.12.3"))
-  rmarkdown::render("test.create_chunks.Rmd")
+# Remove all but setup chunk
+remove_chunks(file="test.create_chunks.Rmd",
+              chunk_labels = 2:nrow(chunklst),
+              output.file="test.create_chunks.Rmd")
 
-# Clean up --------------
-file.remove("test.create_chunks.Rmd","test.create_chunks.RDS",
-            "test.create_chunks.md","test.create_chunks.html")
-unlink("test.create_chunks_files",recursive=TRUE)
-
-setwd(owd)
-# Use a temporary directory ----------------------------
-owd = getwd()
-td = tempdir()
-setwd(td)
-
-# Test --------------
-library(knitrdata)
-library(magrittr) # For pipe operator
-
-# Create new Rmarkdown document
-if (file.exists("test.create_chunks.Rmd"))
-  file.remove("test.create_chunks.Rmd")
-rmarkdown::draft("test.create_chunks.Rmd","github_document","rmarkdown",
-                 edit=FALSE)
+# List all chunks again
+chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
+chunklst
 
 # Create some binary data
 x = data.frame(a=1:10,b=(1:10)^2)
@@ -147,26 +139,17 @@ saveRDS(x,"test.create_chunks.RDS")
 
 # Push chunks into Rmarkdown document
 # Insert in reverse order to not have to figure out line number
-txt = create_chunk("x\nplot(b~a,data=x)",chunk_type="r") \%>\%
+txt = create_chunk(chunk_label="plot",c("x","plot(b~a,data=x)"),chunk_type="r") \%>\%
   insert_chunk(11,rmd.file="test.create_chunks.Rmd")
 txt = data_encode("test.create_chunks.RDS","base64") \%>\%
-  create_chunk(output.var="x",format="binary",loader.function=readRDS) \%>\%
+  create_chunk(chunk_label="thedata",output.var="x",format="binary",loader.function=readRDS) \%>\%
   insert_chunk(11,txt)
-txt = create_chunk("library(knitrdata)",chunk_type="r") \%>\%
+txt = create_chunk(chunk_label="loadknitrdata","library(knitrdata)",chunk_type="r") \%>\%
   insert_chunk(11,txt)
 
 writeLines(txt,"test.create_chunks.Rmd")
 
-# List all chunks in documents
-chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
-chunklst
-
-# Remove the pressure chunk
-xx = split_rmd_by_chunk(file="test.create_chunks.Rmd",chunk_label="pressure")
-txt = c(xx$pre_chunk,xx$post_chunk)
-writeLines(txt,"test.create_chunks.Rmd")
-
-# List chunks again
+# List all chunks again
 chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
 chunklst
 
@@ -190,6 +173,8 @@ Other Chunk tools:
 \code{\link{remove_chunks_dialog}()}
 }
 \author{
+David M. Kaplan \email{dmkaplan2000@gmail.com}
+
 David M. Kaplan \email{dmkaplan2000@gmail.com}
 
 David M. Kaplan \email{dmkaplan2000@gmail.com}

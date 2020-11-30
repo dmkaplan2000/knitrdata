@@ -2,7 +2,7 @@
 
 # Some minor helper functions
 isemp = function(x) is.null(x) || (x=="")
-firstword = function(x,split=" ") sapply(strsplit(x,split=split),function(y) y[1])
+firstword = function(x,split="( |\t|\r?\n)") sapply(strsplit(x,split=split),function(y) y[1])
 
 # Function for creating a data chunk --------------------
 
@@ -195,7 +195,6 @@ create_data_chunk_dialog = function (
           chunk = readLines(fn)
         }
 
-        chunk = do.call(c,strsplit(chunk,"\r?\n")) # Break into lines
         chunk_label = NULL
         if (!isemp(input$chunk_label))
           chunk_label = input$chunk_label
@@ -421,20 +420,12 @@ remove_chunks_dialog = function (title="Eliminate (data) chunks") {
       if(is.null(rows) || length(rows)==0)
         shiny::stopApp(FALSE)
 
-      contents = context$contents
-      chunks = rv$chunks[rows,]
-
-      # Get full list of line numbers to remove
-      se = as.data.frame(t(chunks[,c("start","end"),drop=FALSE]))
-      lns = do.call(c,lapply(se,function(x) x[1]:x[2]))
-
-      # Remove rows
-      contents = contents[-1*lns]
+      contents = remove_chunks(text=context$contents,chunk_labels=rows)
 
       # Put into document
       rstudioapi::setDocumentContents(paste0(contents,platform.newline(),collapse=""),context$id)
       rstudioapi::setCursorPosition(
-        rstudioapi::document_position(min(lns)-1,1),
+        rstudioapi::document_position(rv$chunks$start[rows[1]]-1,1),
         context$id)
 
       shiny::stopApp(TRUE)

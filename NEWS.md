@@ -1,3 +1,9 @@
+knitrdata 0.6.0
+---------------------------------------------------------------------
+
+- Adding remove_chunks function for command link chunk removal.
+- Fix to empty line removal in create/insert_data_chunk_dialog.
+
 knitrdata 0.5.3
 ---------------------------------------------------------------------
 

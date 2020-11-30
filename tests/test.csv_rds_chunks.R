@@ -37,7 +37,7 @@ loadodd =
 loadrds = data_encode(rds.fn,"base64") %>%
   create_chunk(output.var="df.rds",echo=TRUE,chunk_label="loadrds",chunk_type="rds")
 
-showdata = create_chunk("df.csv\ndf.csv\ndf.odd\ndf.rds",
+showdata = create_chunk(c("df.csv","df.csv","df.odd","df.rds"),
                         chunk_type="r",
                         chunk_label="showdata")
 

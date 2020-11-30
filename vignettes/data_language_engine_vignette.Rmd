@@ -802,11 +802,11 @@ Will lead to `%d` being replaced with `9`.
 
 ### Unencoded text chunks and md5sum
 
-Using `md5sum` checks on text chunks that are not encoded (i.e., `'asis'`) can be tricky because when the chunk is processed, by default an operating-system-dependent newline character will be added to each line, including the final line. This will potentially make the md5sum check fail if the file was created on a different operating system or the final line lacked a newline character. To have the best possible chances of success when using `md5sum` checks with unencoded text files, follow these steps:
+Using `md5sum` checks on text chunks that are not encoded (i.e., `'asis'`) can be tricky because when the chunk is processed, an operating-system-dependent newline character will be added to each line, including the final line. This will potentially make the md5sum check fail if the file was created on a different operating system or the final line lacks a newline character. To have the best possible chances of success when using `md5sum` checks with unencoded text files, follow these steps:
 
-* Assure that the original external text file has a newline character on the last line (i.e., the file ends on a new empty line)
-* If you do not care about cross-platform compatibility, then just make sure that the original external text file used to calculate the `md5sum` is formatted as is standard for your operating system (i.e., newlines with `'\r\n'` on DOS/Windows, and newlines with `'\n'` on all other operating systems)
-* For cross-platform compatibility, specify the `line.sep` chunk option to explicitly set the newline format to use. For example, you can specify chunk option `line.sep="\r\n"` to force the `data` language engine to output DOS formatted text files
+* Assure that the original external text file has a newline character on the last line (i.e., the file ends on a new empty line).
+* If you do not care about cross-platform compatibility, then just make sure that the original external text file used to calculate the `md5sum` is formatted as is standard for your operating system (i.e., newlines with `'\r\n'` on DOS/Windows, and newlines with `'\n'` on all other operating systems).
+* For cross-platform compatibility, specify the `line.sep` chunk option to explicitly set the newline format to use. For example, you can specify chunk option `line.sep="\r\n"` to force the `data` language engine to output DOS formatted text files.
 
 If you follow these steps, `md5sum` checks of text chunk contents should work. The `Insert filled data chunk` RStudio addin will attempt to set the `line.sep` chunk option to match that of the incoming text file so that one normally should not need to worry about the text file format.
 
@@ -838,16 +838,20 @@ if (digest::sha1(d) != "a5918a84b39f0b6f42e9ab4a19771a7d6a5777a0")
   stop("data corrupted!")
 ```
 
-
-These concerns do not apply to `base64` or `gpg` encoded text files as the exact text file contents, including line endings, are encoded in the chunk contents.
+These concerns do not apply to `base64` or `gpg` encoded text files as the exact text file contents are encoded in the chunk contents.
 
 ### Workarounds for GPG data chunk error: *Password callback did not return a string value*
 
-If one includes in a Rmarkdown document a GPG-encoded data chunk that uses a password-protected GPG key, then knitting may fail with the error `Password callback did not return a string value`. This is because knitting occurs in a non-interactive Rmarkdown session and, therefore, `gpg::gpg_decrypt` is unable to open the password entry dialog during the knitting process. The `gpg` package does not currently include another mechanism for providing the key password, but one can work around this problem by using any mechanism to temporarily store the key password in the GPG keyring manager. This can generally be achieved by decrypting something that was encrypted by the same key that was used to encrypt the chunk. If the password is available to the keyring, then `gpg::gpg_decrypt` will not attempt to open the password entry dialog, thereby avoiding the problem.
+If one includes in a Rmarkdown document a GPG-encoded data chunk that uses a password-protected 
+GPG key, then knitting may fail with the error `Password callback did not return a string value`. This is because knitting of an Rmarkdown document takes place in a non-interactive R session and, therefore, `gpg::gpg_decrypt` is unable to open the password entry dialog during the knitting process. The `gpg` package does not currently include another mechanism for providing the key password, but one can work around this problem by using any mechanism to temporarily store the key password in the GPG keyring manager. This can generally be achieved by decrypting something that was encrypted by the same key that was used to encrypt the chunk. This normally leads to the GPG key password being temporarily stored in the keyring so that `gpg::gpg_decrypt` will not attempt to open the password entry dialog, thereby avoiding the problem.
 
-If working in Rstudio, then the simplest way to work around this problem is by manually executing the chunk that produced the error using the `Run Current Chunk` button. Provided that the `knitrdata` package has been loaded/attached in the interactive R session, then this will open the password dialog, allowing one to enter the password and decrypt the chunk contents. After this, the password should be (temporarily) saved in the keyring and the document should knit successfully.
+As a workaround for this problem, `knitrdata` includes the `unlock_gpg_key_passphrase` that when run from the command line with identifying information regarding the key needed to decrypt the data chunks in the Rmarkdown document will attempt to unlock the key.
 
-As a final workaround to this problem, one can remove the password from the relevant GPG key in the keyring manager before knitting, though this is not recommended.
+```{r eval=FALSE}
+knitrdata::unlock_gpg_key_passphrase(name="David M. Kaplan")
+```
+
+It achieves this by encrypting and then immediately decrypting a small amount of data with the given key.
 
 ## Full list of data chunk options
 
@@ -864,7 +868,7 @@ Chunk option|Description
 `output.file`|A character string with the filename to which the chunk output will be written. At least one of `output.var` or `output.file` must always be supplied.
 `loader.function`|A function that will be passed (as the first argument) the name of a file containing the (potentially decoded) contents of the data chunk.
 `loader.ops`|A list of additional arguments to be passed to `loader.function`.
-`line.sep`|Only used when `encoding='"asis"'`. In this cases, specifies the character string that will be used to join the lines of the data chunk before further processing or returning them. Defaults to `platform.newline()`.
+`line.sep`|Only used when `encoding='"asis"'`. In this cases, specifies the character string that will be used to join the lines of the data chunk before export to an external file, further processing or returning the data. Defaults to `platform.newline()`.
 `max.echo`|An integer specifying the maximum number of lines of data to echo in the final output document. Defaults to 20. If the data exceeds this length, only the first 20 lines will be shown and a final line indicating the number of ommitted lines will be added.
 ```
 

@@ -12,56 +12,70 @@ create_chunk(
   chunk_type = "data",
   file = NULL,
   chunk_options_string = NULL,
-  split_lines = TRUE
+  split_lines = TRUE,
+  newline = platform.newline()
 )
 
 insert_chunk(chunk, line, rmd.text = readLines(rmd.file), rmd.file = NULL)
 }
 \arguments{
-\item{text}{Character vector with contents of chunk.}
+\item{text}{Character vector with contents of chunk, one line per element of
+vector. If the character vector has just a single element, then an attempt
+will be made to split it into lines using \code{readLines}.}
 
-\item{\dots}{Additional chunk options. These are not evaluated, but rather included
-in the function call as they are entered in the function call.}
+\item{\dots}{Additional chunk options. These are not evaluated, but rather
+included in the function call as they are entered in the function call.}
 
-\item{chunk_label}{Character string giving the label to be used for the chunk.}
+\item{chunk_label}{Character string giving the label to be used for the
+chunk.}
 
-\item{chunk_type}{Character string giving the chunk type. Defaults to \code{"data"}.}
+\item{chunk_type}{Character string giving the chunk type. Defaults to
+\code{"data"}.}
 
 \item{file}{Path to file containing chunk contents. Ignored if \code{text}
-argument supplied. As a consequence, this means that all arguments must be named
-if the \code{file} argument is supplied to \code{create_chunk}.}
+argument supplied. As a consequence, this means that all arguments must be
+named if the \code{file} argument is supplied to \code{create_chunk}.}
 
-\item{chunk_options_string}{Character vector with additional chunk options that will
-be included in the header after the arguments in \dots.}
+\item{chunk_options_string}{Character vector with additional chunk options
+that will be included in the header after the arguments in \dots.}
 
-\item{split_lines}{Boolean indicating whether or not the chunk contents should be split
-along line breaks before returning. Defaults to \code{TRUE}.}
+\item{split_lines}{Boolean indicating whether or not the chunk contents
+should be split along line breaks before returning. Defaults to
+\code{TRUE}.}
 
-\item{chunk}{Character string with chunk contents including header and tail.}
+\item{newline}{Character string used to end lines of text. Only relevant if
+\code{split_lines=FALSE}. Defaults to \code{platform.newline()}.}
+
+\item{chunk}{Character vector with chunk contents including header and tail.
+If the character vector has just a single element, then an attempt will be
+made to split it into lines using \code{readLines}.}
 
 \item{line}{Line number where chunk to be inserted.}
 
-\item{rmd.text}{Text of Rmarkdown document where chunk contents are to be inserted.}
+\item{rmd.text}{Character vector with contents of Rmarkdown document where
+chunk contents are to be inserted. It should have one element per line of
+text (as returned by \code{readLines}).  If the character vector has just a
+single element, then an attempt will be made to split it into lines using
+\code{readLines}.}
 
-\item{rmd.file}{Filename of Rmarkdown document where chunk contents are to be inserted.
-Ignored if \code{rmd.text} is supplied.}
+\item{rmd.file}{Filename of Rmarkdown document where chunk contents are to be
+inserted. Ignored if \code{rmd.text} is supplied.}
 }
 \description{
-These helper functions allow one to add the chunk header and tail to text containing
-chunk contents and then insert that into a Rmarkdown document.
+These helper functions allow one to add the chunk header and tail to text
+containing chunk contents and then insert that into a Rmarkdown document.
 }
 \details{
-\code{create_chunk}
-takes in the (possibly encoded by \code{data_encode})
+\code{create_chunk} takes in the (possibly encoded by \code{data_encode})
 contents of a chunk and adds the chunk header and closer, invisibly returning
 entire chunk contents as a character string.
 
-\code{insert_chunk} takes the chunk contents and inserts it at the given line number
-in the \code{rmd.text} or \code{rmd.file}.
+\code{insert_chunk} takes the chunk contents and inserts it at the given line
+number in the \code{rmd.text} or \code{rmd.file}.
 
 Note that the additional arguments to \code{create_chunk} (\dots) are not
-evaluated, but rather they are placed in the chunk header as they appear in the
-function call as additional chunk options.
+evaluated, but rather they are placed in the chunk header as they appear in
+the function call as additional chunk options.
 }
 \section{Functions}{
 \itemize{
@@ -88,23 +102,7 @@ if (file.exists("test.create_chunks.Rmd"))
 rmarkdown::draft("test.create_chunks.Rmd","github_document","rmarkdown",
                  edit=FALSE)
 
-# Create some binary data
-x = data.frame(a=1:10,b=(1:10)^2)
-saveRDS(x,"test.create_chunks.RDS")
-
-# Push chunks into Rmarkdown document
-# Insert in reverse order to not have to figure out line number
-txt = create_chunk("x\nplot(b~a,data=x)",chunk_type="r") \%>\%
-  insert_chunk(11,rmd.file="test.create_chunks.Rmd")
-txt = data_encode("test.create_chunks.RDS","base64") \%>\%
-  create_chunk(output.var="x",format="binary",loader.function=readRDS) \%>\%
-  insert_chunk(11,txt)
-txt = create_chunk("library(knitrdata)",chunk_type="r") \%>\%
-  insert_chunk(11,txt)
-
-writeLines(txt,"test.create_chunks.Rmd")
-
-# List all chunks in documents
+# List all chunks in document
 chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
 chunklst
 
@@ -114,6 +112,35 @@ txt = c(xx$pre_chunk,xx$post_chunk)
 writeLines(txt,"test.create_chunks.Rmd")
 
 # List chunks again
+chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
+chunklst
+
+# Remove all but setup chunk
+remove_chunks(file="test.create_chunks.Rmd",
+              chunk_labels = 2:nrow(chunklst),
+              output.file="test.create_chunks.Rmd")
+
+# List all chunks again
+chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
+chunklst
+
+# Create some binary data
+x = data.frame(a=1:10,b=(1:10)^2)
+saveRDS(x,"test.create_chunks.RDS")
+
+# Push chunks into Rmarkdown document
+# Insert in reverse order to not have to figure out line number
+txt = create_chunk(chunk_label="plot",c("x","plot(b~a,data=x)"),chunk_type="r") \%>\%
+  insert_chunk(11,rmd.file="test.create_chunks.Rmd")
+txt = data_encode("test.create_chunks.RDS","base64") \%>\%
+  create_chunk(chunk_label="thedata",output.var="x",format="binary",loader.function=readRDS) \%>\%
+  insert_chunk(11,txt)
+txt = create_chunk(chunk_label="loadknitrdata","library(knitrdata)",chunk_type="r") \%>\%
+  insert_chunk(11,txt)
+
+writeLines(txt,"test.create_chunks.Rmd")
+
+# List all chunks again
 chunklst = list_rmd_chunks(file="test.create_chunks.Rmd")
 chunklst
 
