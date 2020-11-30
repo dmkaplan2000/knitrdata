@@ -194,7 +194,6 @@ create_data_chunk_dialog = function (
           chunk = readLines(fn)
         }
 
-        chunk = readLines(con=textConnection(chunk)) # Break into lines
         chunk_label = NULL
         if (!isemp(input$chunk_label))
           chunk_label = input$chunk_label

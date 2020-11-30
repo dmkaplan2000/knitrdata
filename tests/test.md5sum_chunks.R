@@ -10,17 +10,23 @@ setwd(td)
 
 # Text file with platform line separator
 pn = platform.newline()
-txt = paste0("Hello",pn,"Goodbye",pn)
+txt = paste0(pn,"Hello",pn,pn,"Goodbye",pn,pn)
 txt.fn = "test.md5sum_chunks.txt"
 writeChar(txt,txt.fn,useBytes=TRUE,eos=NULL)
 txt.md5 = tools::md5sum(txt.fn)
 
 # Text file with opposite line separator
 opn = ifelse(pn=="\n","\r\n","\n")
-txt2 = paste0("Goodbye",opn,"Hello",opn)
+txt2 = paste0(opn,"Goodbye",opn,opn,"Hello",opn,opn)
 txt2.fn = "test2.md5sum_chunks.txt"
 writeChar(txt2,txt2.fn,useBytes=TRUE,eos=NULL)
 txt2.md5 = tools::md5sum(txt2.fn)
+
+# Chinese text
+ch.txt = "发动机测谎报告"
+ch.fn = "text.md5sum_chunks.ch.txt"
+writeLines(ch.txt,ch.fn,useBytes=TRUE)
+ch.md5 = tools::md5sum(ch.fn)
 
 # Create a simple binary file ----------------
 d = data.frame(x=1:3,y=letters[1:3])
@@ -48,7 +54,7 @@ loadtxt =
   )
 
 # Text chunk specifying explicitly newline character to use
-oopn = sub("\n","\\\\n",sub("\r","\\\\r",opn))
+oopn = ifelse(opn=="\n","\\n","\\r\\n")
 co2 = paste0('md5sum="',txt2.md5,'",line.sep="',oopn,'"')
 loadtxt2 =
   create_chunk(lines2,output.var="txt2",output.file="output2.md5sum_chunks.txt",
@@ -76,7 +82,14 @@ loaddata = data_encode(rds.fn,"base64") %>%
                chunk_label="loadrds",chunk_options_string = co
   )
 
-showdata = create_chunk("cat(txt)\ncat(txt2)\ncat(txt64)\ncat(txt264)\nd",
+co = paste0('md5sum="',ch.md5,'"')
+loadch =
+  create_chunk(file=ch.fn,output.var="chtxt",output.file="output.md5sum_chunks.ch.txt",
+               format="text",echo=TRUE,
+               chunk_label="loadchtxt",chunk_options_string = co
+  )
+
+showdata = create_chunk(c("cat(txt)","cat(txt2)","cat(txt64)","cat(txt264)","d","cat(chtxt)"),
                         chunk_type="r",
                         chunk_label="showdata")
 
@@ -86,6 +99,7 @@ showdata = create_chunk("cat(txt)\ncat(txt2)\ncat(txt64)\ncat(txt264)\nd",
 rmd.text = readLines(rmd.fn)
 
 rmd.text = insert_chunk(showdata,11,rmd.text=rmd.text)
+rmd.text = insert_chunk(loadch,11,rmd.text=rmd.text)
 rmd.text = insert_chunk(loaddata,11,rmd.text=rmd.text)
 rmd.text = insert_chunk(loadtxt264,11,rmd.text=rmd.text)
 rmd.text = insert_chunk(loadtxt64,11,rmd.text=rmd.text)

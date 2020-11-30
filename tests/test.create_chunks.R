@@ -41,7 +41,7 @@ saveRDS(x,"test.create_chunks.RDS")
 
 # Push chunks into Rmarkdown document
 # Insert in reverse order to not have to figure out line number
-txt = create_chunk(chunk_label="plot","x\nplot(b~a,data=x)",chunk_type="r") %>%
+txt = create_chunk(chunk_label="plot",c("x","plot(b~a,data=x)"),chunk_type="r") %>%
   insert_chunk(11,rmd.file="test.create_chunks.Rmd")
 txt = data_encode("test.create_chunks.RDS","base64") %>%
   create_chunk(chunk_label="thedata",output.var="x",format="binary",loader.function=readRDS) %>%

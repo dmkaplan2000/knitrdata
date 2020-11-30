@@ -1,39 +1,62 @@
+# Help function to try to break up lines correctly -------------
+# This is messy as it requires writing the text to disk and reading it back in,
+# but there are so many edge cases for newlines that it is hard to do well otherwise.
+break.lines = function(text) {
+  tf = tempfile()
+  on.exit(file.remove(tf))
+
+  writeChar(text,tf,useBytes=TRUE,eos=NULL)
+  return(readLines(tf,warn=FALSE))
+}
+
 # Functions for creating a data chunk with appropriate header ------------------
 
 #' Tools for creating (data) chunks and inserting them into Rmarkdown documents
 #'
-#' These helper functions allow one to add the chunk header and tail to text containing
-#' chunk contents and then insert that into a Rmarkdown document.
+#' These helper functions allow one to add the chunk header and tail to text
+#' containing chunk contents and then insert that into a Rmarkdown document.
 #'
-#' \code{create_chunk}
-#' takes in the (possibly encoded by \code{data_encode})
+#' \code{create_chunk} takes in the (possibly encoded by \code{data_encode})
 #' contents of a chunk and adds the chunk header and closer, invisibly returning
 #' entire chunk contents as a character string.
 #'
-#' \code{insert_chunk} takes the chunk contents and inserts it at the given line number
-#' in the \code{rmd.text} or \code{rmd.file}.
+#' \code{insert_chunk} takes the chunk contents and inserts it at the given line
+#' number in the \code{rmd.text} or \code{rmd.file}.
 #'
 #' Note that the additional arguments to \code{create_chunk} (\dots) are not
-#' evaluated, but rather they are placed in the chunk header as they appear in the
-#' function call as additional chunk options.
+#' evaluated, but rather they are placed in the chunk header as they appear in
+#' the function call as additional chunk options.
 #'
-#' @param text Character vector with contents of chunk.
+#' @param text Character vector with contents of chunk, one line per element of
+#'   vector. If the character vector has just a single element, then an attempt
+#'   will be made to split it into lines using \code{readLines}.
 #' @param file Path to file containing chunk contents. Ignored if \code{text}
-#'   argument supplied. As a consequence, this means that all arguments must be named
-#'   if the \code{file} argument is supplied to \code{create_chunk}.
-#' @param chunk_label Character string giving the label to be used for the chunk.
-#' @param chunk_type Character string giving the chunk type. Defaults to \code{"data"}.
-#' @param \dots Additional chunk options. These are not evaluated, but rather included
-#'   in the function call as they are entered in the function call.
-#' @param chunk_options_string Character vector with additional chunk options that will
-#'   be included in the header after the arguments in \dots.
-#' @param split_lines Boolean indicating whether or not the chunk contents should be split
-#'   along line breaks before returning. Defaults to \code{TRUE}.
-#' @param chunk Character string with chunk contents including header and tail.
+#'   argument supplied. As a consequence, this means that all arguments must be
+#'   named if the \code{file} argument is supplied to \code{create_chunk}.
+#' @param chunk_label Character string giving the label to be used for the
+#'   chunk.
+#' @param chunk_type Character string giving the chunk type. Defaults to
+#'   \code{"data"}.
+#' @param \dots Additional chunk options. These are not evaluated, but rather
+#'   included in the function call as they are entered in the function call.
+#' @param chunk_options_string Character vector with additional chunk options
+#'   that will be included in the header after the arguments in \dots.
+#' @param split_lines Boolean indicating whether or not the chunk contents
+#'   should be split along line breaks before returning. Defaults to
+#'   \code{TRUE}.
+#' @param newline Character string used to end lines of text. Only relevant if
+#'   \code{split_lines=FALSE}. Defaults to \code{platform.newline()}.
+#' @param chunk Character vector with chunk contents including header and tail.
+#'   If the character vector has just a single element, then an attempt will be
+#'   made to split it into lines using \code{readLines}.
 #' @param line Line number where chunk to be inserted.
-#' @param rmd.text Text of Rmarkdown document where chunk contents are to be inserted.
-#' @param rmd.file Filename of Rmarkdown document where chunk contents are to be inserted.
-#'   Ignored if \code{rmd.text} is supplied.
+#' @param rmd.text Character vector with contents of Rmarkdown document where
+#'   chunk contents are to be inserted. It should have one element per line of
+#'   text (as returned by \code{readLines}).  If the character vector has just a
+#'   single element, then an attempt will be made to split it into lines using
+#'   \code{readLines}.
+#' @param rmd.file Filename of Rmarkdown document where chunk contents are to be
+#'   inserted. Ignored if \code{rmd.text} is supplied.
 #'
 #' @export
 #'
@@ -46,33 +69,38 @@ create_chunk = function(text=readLines(file),
                         ...,chunk_label=NULL,
                         chunk_type="data",
                         file=NULL,chunk_options_string=NULL,
-                        split_lines=TRUE) {
-  text = paste0(text,collapse=platform.newline())
+                        split_lines=TRUE,
+                        newline=platform.newline()) {
+  # If single element text vector given, try to split into lines
+  if (length(text) == 1)
+    text = break.lines(text)
 
   # Get additional input options as character string
   args = match.call(expand.dots=FALSE)$...
   argvalues = vapply(args, deparse, character(1L))
-  dots = paste(ifelse(names(args)=="",argvalues,
-                      paste(names(args), argvalues, sep = ' = ')),
-               collapse = ', ')
-
-  if (!is.null(chunk_options_string)) {
-    dots = ifelse(dots=="",
-                  chunk_options_string,
-                  paste(dots,chunk_options_string,sep=", "))
+  if (is.null(names(args))) { # Happens if only unnamed dots arguments
+    dots = paste(argvalues,collapse=", ")
+  } else { # At least one dots argument has a name
+    dots = paste(ifelse(names(args)=="",
+                        argvalues,
+                        paste(names(args), argvalues, sep = ' = ')),
+                 collapse = ', ')
   }
 
-  if (!is.null(chunk_label))
-    chunk_label = paste0(chunk_label,",")
+  if (dots == "")
+    dots = NULL
 
-  header = paste0("```{",chunk_type," ",chunk_label,dots,"}")
-  tail = "```"
+  # Make string with all optional arguments to chunk
+  ops = paste0(c(chunk_label,dots,chunk_options_string),
+               collapse=", ")
 
-  text = sub("\r?\n$","",text) # Removing any trailing newline
-  chunk = paste(header,text,tail,sep=platform.newline())
+  header = paste0("```{",chunk_type,ifelse(ops=="" || is.null(ops),""," "),ops,"}")
+  tail = paste0("```")
 
-  if (split_lines)
-    chunk = strsplit(chunk,"\r?\n")[[1]]
+  chunk = c(header,text,tail)
+
+  if (!split_lines)
+    chunk = paste0(chunk,newline,collapse="")
 
   invisible(chunk)
 }
@@ -83,6 +111,12 @@ create_chunk = function(text=readLines(file),
 #'   as a character vector with each line in an element of the vector
 #'   including the chunk at the appropriate line number.
 insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
+  # If single element text vector given, try to split into lines
+  if (length(chunk) == 1)
+    chunk = break.lines(chunk)
+  if (length(rmd.text) == 1)
+    rmd.text = break.lines(rmd.text)
+
   if (line > length(rmd.text))
     stop("line argument beyond end of input file.")
 
@@ -95,48 +129,52 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
 
 #' Tools for working with existing chunks in Rmarkdown documents
 #'
-#' These helper functions allow one to identify all the chunks in a Rmarkdown document,
-#' split the document into pieces by a specific chunk so that one can either work
-#' with the chunk contents or remove the chunk, and remove several chunks at once.
+#' These helper functions allow one to identify all the chunks in a Rmarkdown
+#' document, split the document into pieces by a specific chunk so that one can
+#' either work with the chunk contents or remove the chunk, and remove several
+#' chunks at once.
 #'
-#' \code{list_rmd_chunks} takes a Rmarkdown document and returns
-#' a \code{data.frame} listing the essential information of every chunk, including
+#' \code{list_rmd_chunks} takes a Rmarkdown document and returns a
+#' \code{data.frame} listing the essential information of every chunk, including
 #' chunk type (language engine), label and start and end line numbers.
 #'
-#' \code{split_rmd_by_chunk} takes a Rmarkdown document and a chunk label or number and
-#' returns the Rmarkdown document split into 4 pieces: the part before the chunk,
-#' the chunk header, the chunk contents, the chunk tail and the part after the chunk.
-#' These can then be used to either work with the chunk contents or remove the chunk from
-#' the Rmarkdown document.
+#' \code{split_rmd_by_chunk} takes a Rmarkdown document and a chunk label or
+#' number and returns the Rmarkdown document split into 4 pieces: the part
+#' before the chunk, the chunk header, the chunk contents, the chunk tail and
+#' the part after the chunk. These can then be used to either work with the
+#' chunk contents or remove the chunk from the Rmarkdown document.
 #'
-#' \code{remove_chunks} removes several chunks, designated by their text or numeric labels,
-#' all at once from a Rmarkdown document.
+#' \code{remove_chunks} removes several chunks, designated by their text or
+#' numeric labels, all at once from a Rmarkdown document.
 #'
-#' Note that the regular expression used by default to identify chunk starts is not
-#' guaranteed to be exactly the same as that used by \code{knitr} and may not work
-#' if the Rmarkdown document has unusual chunks. In particular, each chunk must have
-#' the chunk type and chunk options enclosed in curly braces. If code chunks exist without
-#' curly braces, then these will generally be ignored, but they could potentially cause
-#' problems in unusual cases.
+#' Note that the regular expression used by default to identify chunk starts is
+#' not guaranteed to be exactly the same as that used by \code{knitr} and may
+#' not work if the Rmarkdown document has unusual chunks. In particular, each
+#' chunk must have the chunk type and chunk options enclosed in curly braces. If
+#' code chunks exist without curly braces, then these will generally be ignored,
+#' but they could potentially cause problems in unusual cases.
 #'
-#' @param text Character vector with contents of chunk, one element per line of text.
+#' @param text Character vector with contents of chunk, one element per line of
+#'   text. If the character vector has just a single element, then an attempt
+#'   will be made to split it into lines using \code{readLines}.
 #' @param file Path to file containing chunk contents. Ignored if \code{text}
-#'   argument supplied. As a consequence, this means that all arguments must be named
-#'   if the \code{file} argument is supplied.
-#' @param chunk.start.pattern Regular expression used to identify chunk starts. The
-#'   default looks for lines beginning with three back quotes, followed by curly braces
-#'   with some sort of text between them and then only spaces till the end of the line.
-#'   This should generally work, but if the Rmarkdown document has
-#'   chunks that have unusual headers, then this argument can be useful. In particular, if
-#'   the document has chunks that begin without curly braces, these will not be recognized.
-#' @param chunk.end.pattern Regular expression used to identify the chunk end. Default
-#'   should generally work.
+#'   argument supplied. As a consequence, this means that all arguments must be
+#'   named if the \code{file} argument is supplied.
+#' @param chunk.start.pattern Regular expression used to identify chunk starts.
+#'   The default looks for lines beginning with three back quotes, followed by
+#'   curly braces with some sort of text between them and then only spaces till
+#'   the end of the line. This should generally work, but if the Rmarkdown
+#'   document has chunks that have unusual headers, then this argument can be
+#'   useful. In particular, if the document has chunks that begin without curly
+#'   braces, these will not be recognized.
+#' @param chunk.end.pattern Regular expression used to identify the chunk end.
+#'   Default should generally work.
 #'
 #' @export
 #'
-#' @describeIn list_rmd_chunks Returns a data frame with 4 columns:
-#'   the chunk type, the chunk label, the line number of the beginning of the chunk
-#'   and the line number of the end of the chunk.
+#' @describeIn list_rmd_chunks Returns a data frame with 4 columns: the chunk
+#'   type, the chunk label, the line number of the beginning of the chunk and
+#'   the line number of the end of the chunk.
 #' @family Chunk tools
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #'
@@ -144,6 +182,10 @@ insert_chunk = function(chunk,line,rmd.text=readLines(rmd.file),rmd.file=NULL) {
 list_rmd_chunks = function(text=readLines(file),file=NULL,
                            chunk.start.pattern="^```[{](.+)[}] *$",
                            chunk.end.pattern="^``` *$") {
+  # If single element text vector given, try to split into lines
+  if (length(text) == 1)
+    text = break.lines(text)
+
   starts = grep(chunk.start.pattern,text)
 
   if (length(starts) < 1) {
@@ -194,6 +236,10 @@ list_rmd_chunks = function(text=readLines(file),file=NULL,
 #'   chunk tail, and post-chunk.
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 split_rmd_by_chunk = function(text=readLines(file),chunk_label,file=NULL,...) {
+  # If single element text vector given, try to split into lines
+  if (length(text) == 1)
+    text = break.lines(text)
+
   ch = list_rmd_chunks(text=text,...)
 
   if (is.character(chunk_label))
@@ -228,6 +274,10 @@ split_rmd_by_chunk = function(text=readLines(file),chunk_label,file=NULL,...) {
 #'   the Rmd file after having removed the desired chunks
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 remove_chunks = function(text=readLines(file),chunk_labels,file=NULL,output.file=NULL,...) {
+  # If single element text vector given, try to split into lines
+  if (length(text) == 1)
+    text = break.lines(text)
+
   ch = list_rmd_chunks(text=text,...)
 
   # Convert character chunk labels into numbers
@@ -243,6 +293,10 @@ remove_chunks = function(text=readLines(file),chunk_labels,file=NULL,output.file
   # Return immediately if no chunk labels around
   if (length(chunk_labels)==0)
     return(invisible(text))
+
+  # Error if chunk numeric identifiers beyond end of file
+  if (max(chunk_labels) > nrow(ch))
+    stop("Chunk numeric identifier exceeds number of chunks in Rmarkdown document.")
 
   # Get full list of line numbers to remove
   se = as.data.frame(t(ch[chunk_labels,c("start","end"),drop=FALSE]))
