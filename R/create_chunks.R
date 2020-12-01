@@ -1,6 +1,8 @@
 # Help function to try to break up lines correctly -------------
 # This is messy as it requires writing the text to disk and reading it back in,
-# but there are so many edge cases for newlines that it is hard to do well otherwise.
+# but there are so many edge cases for newlines that it is hard to do things correctly otherwise.
+# In particular, readLines(textConnection(text)) does not produce the same result as this as it
+# adds a newline to each element of text even if text already has one.
 break.lines = function(text) {
   tf = tempfile()
   on.exit(file.remove(tf))
