@@ -235,8 +235,11 @@ eng_data = function(options) {
     )
 
   # Check md5sum if desired
-  if (!is.null(options$md5sum) && options$md5sum != tools::md5sum(output.file))
-    stop("Given md5sum does not match contents of decoded chunk.")
+  if (!is.null(options$md5sum)) {
+    omd5 = tools::md5sum(output.file)
+    if (options$md5sum != omd5)
+      stop("Given md5sum (= '",options$md5sum,"') does not match md5sum of decoded chunk (= '",omd5,"')")
+  }
 
   # Apply loader function to data if desired
   if (!is.null(options$loader.function)) {

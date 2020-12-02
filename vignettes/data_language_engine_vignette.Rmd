@@ -807,6 +807,7 @@ Using `md5sum` checks on text chunks that are not encoded (i.e., `'asis'`) can b
 * Assure that the original external text file has a newline character on the last line (i.e., the file ends on a new empty line).
 * If you do not care about cross-platform compatibility, then just make sure that the original external text file used to calculate the `md5sum` is formatted as is standard for your operating system (i.e., newlines with `'\r\n'` on DOS/Windows, and newlines with `'\n'` on all other operating systems).
 * For cross-platform compatibility, specify the `line.sep` chunk option to explicitly set the newline format to use. For example, you can specify chunk option `line.sep="\r\n"` to force the `data` language engine to output DOS formatted text files.
+* Stick to a single encoding for all text files, ideally UTF-8.
 
 If you follow these steps, `md5sum` checks of text chunk contents should work. The `Insert filled data chunk` RStudio addin will attempt to set the `line.sep` chunk option to match that of the incoming text file so that one normally should not need to worry about the text file format.
 
