@@ -802,16 +802,16 @@ Will lead to `%d` being replaced with `9`.
 
 ### Unencoded text chunks and md5sum
 
-Using `md5sum` checks on text chunks that are not encoded (i.e., `'asis'`) can be tricky because when the chunk is processed, an operating-system-dependent newline character will be added to each line, including the final line. This will potentially make the md5sum check fail if the file was created on a different operating system or the final line lacks a newline character. To have the best possible chances of success when using `md5sum` checks with unencoded text files, follow these steps:
+Using `md5sum` checks on text chunks that are not encoded (i.e., `'asis'`) can be tricky because when the chunk is processed, an operating-system-dependent newline character will be added to each line, including the final line, and character encoding (i.e., `UTF-8`, `latin1`, etc.) translation might be carried out. This will potentially make the md5sum check fail if the file was created on a different operating system or the final line lacks a newline character. To have the best possible chances of success when using `md5sum` checks with unencoded text files, follow these steps:
 
 * Assure that the original external text file has a newline character on the last line (i.e., the file ends on a new empty line).
 * If you do not care about cross-platform compatibility, then just make sure that the original external text file used to calculate the `md5sum` is formatted as is standard for your operating system (i.e., newlines with `'\r\n'` on DOS/Windows, and newlines with `'\n'` on all other operating systems).
 * For cross-platform compatibility, specify the `line.sep` chunk option to explicitly set the newline format to use. For example, you can specify chunk option `line.sep="\r\n"` to force the `data` language engine to output DOS formatted text files.
-* Stick to a single encoding for all text files, ideally UTF-8.
+* Stick to a single character encoding for all text files and the operating systems being used, ideally `UTF-8`.
 
 If you follow these steps, `md5sum` checks of text chunk contents should work. The `Insert filled data chunk` RStudio addin will attempt to set the `line.sep` chunk option to match that of the incoming text file so that one normally should not need to worry about the text file format.
 
-If for some reason these steps are impractical, one can always use a different method to check the validity of chunk contents. For example, the following would do a *post hoc* check of the validity of loaded data using a SHA1 hash:
+If for some reason these steps are impractical or are not sufficient (e.g., due to differences in character encodings between operating systems), one can always use a different method to check the validity of chunk contents. For example, the following would do a *post hoc* check of the validity of loaded data using a SHA1 hash:
 
 ````markdown
 `r ''````{data output.var="d",loader.function=read.csv}
