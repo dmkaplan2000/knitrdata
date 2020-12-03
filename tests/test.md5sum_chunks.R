@@ -29,6 +29,7 @@ writeLines(ch.txt,ch.fn,useBytes=TRUE)
 ch.md5 = tools::md5sum(ch.fn)
 print(ch.md5)
 # MD5 sums of Chinese text do not work on Windows, likely due to character encoding translation issues!!!
+# This webpage seems pertinent: https://stackoverflow.com/questions/38230026/how-to-print-chinese-letters-from-r
 
 # Create a simple binary file ----------------
 d = data.frame(x=1:3,y=letters[1:3])
