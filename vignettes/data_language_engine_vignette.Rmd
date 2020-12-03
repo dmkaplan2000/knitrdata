@@ -811,7 +811,7 @@ Using `md5sum` checks on text chunks that are not encoded (i.e., `'asis'`) can b
 
 If you follow these steps, `md5sum` checks of text chunk contents should work. The `Insert filled data chunk` RStudio addin will attempt to set the `line.sep` chunk option to match that of the incoming text file so that one normally should not need to worry about the text file format.
 
-If for some reason these steps are impractical or are not sufficient (e.g., due to differences in character encodings between operating systems), one can always use a different method to check the validity of chunk contents. For example, the following would do a *post hoc* check of the validity of loaded data using a SHA1 hash:
+If for some reason these steps are impractical or are not sufficient (e.g., due to differences in character encodings between operating systems), one can always use a different method to check the validity of chunk contents. Base64 encoding of text files with a `md5sum` check in a `data` chunk is always a possibility, but if content visibility is important, then one can use other hash algorithms on the output of a `data` chunk. For example, the following would do a *post hoc* check of the validity of loaded data using a SHA1 hash:
 
 ````markdown
 `r ''````{data output.var="d",loader.function=read.csv}
@@ -839,7 +839,7 @@ if (digest::sha1(d) != "a5918a84b39f0b6f42e9ab4a19771a7d6a5777a0")
   stop("data corrupted!")
 ```
 
-These concerns do not apply to `base64` or `gpg` encoded text files as the exact text file contents are encoded in the chunk contents.
+`md5sum` checks on `base64` or `gpg` encoded text files are generally reliable even if the above steps are not followed as the exact text file contents are encoded in the chunk.
 
 ### Workarounds for GPG data chunk error: *Password callback did not return a string value*
 
