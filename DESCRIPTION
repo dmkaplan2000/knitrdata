@@ -1,6 +1,6 @@
 Package: knitrdata
 Type: Package
-Date: 2020-12-03
+Date: 2020-12-08
 Title: Data Language Engine for 'knitr' / 'rmarkdown'
 Version: 0.6.1
 Authors@R: c(

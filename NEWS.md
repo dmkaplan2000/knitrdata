@@ -2,6 +2,7 @@ knitrdata 0.6.1
 ---------------------------------------------------------------------
 
 - Minor changes to vignette.
+- Fixed strange RStudio bug associated with addin described [here](https://github.com/rstudio/rstudioapi/issues/211) by moving all rstudioapi code into Shiny dialog
 
 knitrdata 0.6.0
 ---------------------------------------------------------------------

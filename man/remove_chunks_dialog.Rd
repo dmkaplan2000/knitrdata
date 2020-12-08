@@ -5,10 +5,7 @@
 \alias{remove_chunks_dialog}
 \title{Invoke Rstudio addin to remove chunks from the active source document}
 \usage{
-remove_chunks_dialog(title = "Eliminate (data) chunks")
-}
-\arguments{
-\item{title}{Text to place in title bar of gadget.}
+remove_chunks_dialog()
 }
 \value{
 Returns \code{TRUE} if one or more chunks were removed, \code{FALSE} otherwise.
@@ -32,7 +29,6 @@ remove_chunks_dialog()
 Other Chunk tools: 
 \code{\link{create_chunk}()},
 \code{\link{create_data_chunk_dialog}()},
-\code{\link{insert_data_chunk_dialog}()},
 \code{\link{insert_data_chunk_template}()},
 \code{\link{list_rmd_chunks}()}
 }

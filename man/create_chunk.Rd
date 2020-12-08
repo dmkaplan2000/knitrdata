@@ -158,7 +158,6 @@ setwd(owd)
 \seealso{
 Other Chunk tools: 
 \code{\link{create_data_chunk_dialog}()},
-\code{\link{insert_data_chunk_dialog}()},
 \code{\link{insert_data_chunk_template}()},
 \code{\link{list_rmd_chunks}()},
 \code{\link{remove_chunks_dialog}()}

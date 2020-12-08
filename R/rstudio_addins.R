@@ -8,19 +8,27 @@ firstword = function(x,split="( |\t|\r?\n)") sapply(strsplit(x,split=split),func
 
 #' Invoke Shiny gadget to create a data chunk
 #'
-#' As different elements of the data chunk are specified, other options will be modified
-#' as is likely to be useful. For example, if a binary file is uploaded, then the \code{format}
-#' will be set to \code{binary}, the \code{encoding} will be set to \code{base64} and the
-#' \code{Encode data?} option will be checked. If these options are not appropriate, then they can
+#' Opens a Shiny dialog allowing the user to specify the content and chunk
+#' options of a data chunk. As different dialog elements are specified, other
+#' elements will be modified to suggest likely desired values. For example, if a
+#' binary file is uploaded, then the \code{format} will be set to \code{binary},
+#' the \code{encoding} will be set to \code{base64} and the \code{Encode data?}
+#' option will be checked. If these options are not appropriate, then they can
 #' be altered afterwards.
 #'
-#' When the \code{Create chunk} button is clicked, the function will return the chunk contents
-#' including header and tail.
+#' When the \code{Create chunk} button is clicked, the function will return the
+#' chunk contents including header and tail. If \code{insert.editor.doc==TRUE},
+#' then the resulting chunk will be inserted into the active document in the
+#' RStudio editor at the cursor position.
 #'
-#' @param title Text to place in title bar of gadget
-#' @param infobar HTML content to place in information bar at top of gadget
+#' \code{insert_data_chunk_dialog} is a wrapper for
+#' \code{create_data_chunk_dialog(insert.editor.doc=TRUE)}.
 #'
-#' @return Invisibly returns the text of the data chunk as a character vector, one line per element.
+#' @param insert.editor.doc Whether or not to insert output chunk into active
+#'   RStudio editor document at cursor position. Defaults to \code{FALSE}.
+#'
+#' @describeIn create_data_chunk_dialog Invisibly returns the text of the data
+#'   chunk as a character vector, one line of text per element.
 #'
 #' @examples
 #' \dontrun{
@@ -32,15 +40,43 @@ firstword = function(x,split="( |\t|\r?\n)") sapply(strsplit(x,split=split),func
 #' @family Chunk tools
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #' @encoding UTF-8
-create_data_chunk_dialog = function (
-  title="Data chunk creator",
+create_data_chunk_dialog = function (insert.editor.doc=FALSE) {
+  # Default titles
+  title="Data chunk creator"
   infobar="<big><b>Fill out, then click above to create chunk</b></big>"
-  ) {
+
+  # Check for needed packages
   pkgs = c("shiny","miniUI")
   if (!all(sapply(pkgs,requireNamespace,quietly=TRUE)))
     stop("This function requires that the following packages be installed: ",
          paste(pkgs,collapse=", "))
 
+  # Prepare if we are trying to insert chunk in RStudio
+  if (insert.editor.doc) {
+    # Check for rstudioapi and rstudio
+    if (!requireNamespace("rstudioapi",quietly=TRUE))
+      stop("The rstudioapi package must be installed to use this function.")
+
+    if (!rstudioapi::isAvailable())
+      stop("RStudio does not appear to be running.")
+
+    # Active document stuff
+    context = rstudioapi::getSourceEditorContext()
+    editor.ln = context$selection[[1]]$range$start["row"]
+
+    # Title
+    title="Data chunk inserter"
+
+    # Infobar contents
+    infobar = paste0(
+      "<big><b>",
+      "Active document: ",ifelse(isemp(context$path),"<i>UNKNOWN</i>",context$path),
+      "<br/>",
+      "Line number: ",editor.ln,
+      "</b></big>")
+  }
+
+  # User interface for dialog
   ui <- miniUI::miniPage(
     miniUI::gadgetTitleBar(title,left = miniUI::miniTitleBarCancelButton(),
                    right = miniUI::miniTitleBarButton("done", "Create chunk", primary = TRUE)),
@@ -236,6 +272,16 @@ create_data_chunk_dialog = function (
 
         chunk = do.call(create_chunk,args)
 
+        if (insert.editor.doc) {
+          # Insert text
+          rstudioapi::insertText(location=c(editor.ln,1),
+                                 text = paste0(chunk,platform.newline(),collapse=""),
+                                 id = context$id)
+
+          # Set position
+          rstudioapi::setCursorPosition(position=c(editor.ln,1),id=context$id)
+        }
+
         shiny::stopApp(chunk)
       }
     })
@@ -254,22 +300,10 @@ create_data_chunk_dialog = function (
 }
 
 # Insert data chunk ------------------------------
-#' Invoke Rstudio addin to insert a data chunk in active source document
-#'
-#' As different elements of the data chunk are specified, other options will be modified
-#' as is likely to be useful. For example, if a binary file is uploaded, then the \code{format}
-#' will be set to \code{binary}, the \code{encoding} will be set to \code{base64} and the
-#' \code{Encode data?} option will be checked. If these options are not appropriate, then they can
-#' be altered afterwards.
-#'
-#' When the \code{Create chunk} button is clicked, the contents of the data chunk will be inserted
-#' at the current cursor location of the active source document in the Rstudio editor.
-#'
-#' @param title Text to place in title bar of gadget.
-#' @param chunk Text content of the data chunk. If not given (as is typically the case), the
-#'   \code{\link{create_data_chunk_dialog}} will be used to generate chunk contents.
-#'
-#' @return Returns \code{TRUE} if a chunk was inserted, \code{FALSE} otherwise.
+
+#' @describeIn create_data_chunk_dialog Invisibly returns the text of the data
+#'   chunk as a character vector, one line of text per element, if a chunk was
+#'   inserted. Returns \code{NULL} otherwise.
 #'
 #' @examples
 #' \dontrun{
@@ -278,53 +312,21 @@ create_data_chunk_dialog = function (
 #'
 #' @export
 #'
-#' @family Chunk tools
-#' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #' @encoding UTF-8
-insert_data_chunk_dialog = function (title="Data chunk inserter",
-                                     chunk = NULL) {
-  if (!requireNamespace("rstudioapi",quietly=TRUE))
-    stop("The rstudioapi package must be installed to use this function.")
-
-  # Active document stuff
-  context = rstudioapi::getSourceEditorContext()
-  ln = context$selection[[1]]$range$start["row"]
-  dp = rstudioapi::document_position(ln,1) # position object
-
-  # Infobar contents
-  infobar = paste0(
-    "<big><b>",
-    "Active document: ",ifelse(isemp(context$path),"<i>UNKNOWN</i>",context$path),
-    "<br/>",
-    "Line number: ",ln,
-    "</b></big>")
-
-  # Run dialog if chunk not given as argument
-  if (is.null(chunk))
-    chunk = create_data_chunk_dialog(title=title,infobar=infobar)
-
-  if (is.null(chunk))
-    return(invisible(FALSE))
-
-  # Insert text
-  rstudioapi::insertText(dp,paste0(chunk,platform.newline(),collapse=""),context$id)
-
-  # Set position - sometimes causes errors for some unknown reason
-  rstudioapi::setCursorPosition(dp,context$id)
-
-  return(invisible(TRUE))
-}
+insert_data_chunk_dialog = function (insert.editor.doc=TRUE)
+  create_data_chunk_dialog(insert.editor.doc=insert.editor.doc)
 
 # Empty data chunk template ----------------------------
 
 #' Insert an empty data chunk template in active source document
 #'
-#' This function is essentially the equivalent for data chunks
-#' of the "Insert a new code chunk" menu item
-#' available in Rstudio when a Rmarkdown document is open. It places at the current cursor
-#' location an empty \code{data} chunk that can then be modified and filled in by hand.
+#' This function is essentially the equivalent for data chunks of the "Insert a
+#' new code chunk" menu item available in Rstudio when a Rmarkdown document is
+#' open. It places at the current cursor location an empty \code{data} chunk
+#' that can then be modified and filled in by hand.
 #'
-#' @return Returns \code{TRUE} if a chunk was inserted, \code{FALSE} otherwise.
+#' @return Invisibly returns the chunk contents as a character vector, one line
+#'   of text per element.
 #'
 #' @examples
 #' \dontrun{
@@ -343,11 +345,31 @@ insert_data_chunk_template = function() {
       "# Instructions:",
       "# 1) Fill in at least one of these chunk options: output.var & output.file",
       "# 2) Add or modify other chunk options",
-      "# 3) Delete these instructions and replace with data"
+      "# 3) Delete any unused chunk options (e.g., output.file)",
+      "# 4) Delete these instructions and replace with data"
     ),
-    format="text",encoding="asis",output.var=,output.file=,loader.function=NULL)
+    format="text",encoding="asis",output.var=,output.file=,loader.function=NULL,echo=TRUE)
 
-  return(insert_data_chunk_dialog(chunk=chunk))
+  # Check for rstudioapi and rstudio
+  if (!requireNamespace("rstudioapi",quietly=TRUE))
+    stop("The rstudioapi package must be installed to use this function.")
+
+  if (!rstudioapi::isAvailable())
+    stop("RStudio does not appear to be running.")
+
+  # Active document stuff
+  context = rstudioapi::getSourceEditorContext()
+  editor.ln = context$selection[[1]]$range$start["row"]
+
+  # Insert text
+  rstudioapi::insertText(location=c(editor.ln,1),
+                         text = paste0(chunk,platform.newline(),collapse=""),
+                         id = context$id)
+
+  # Set position
+  rstudioapi::setCursorPosition(position=c(editor.ln,1),id=context$id)
+
+  return(invisible(chunk))
 }
 
 # Remove chunks ------------------------------
@@ -361,8 +383,6 @@ insert_data_chunk_template = function() {
 #' When the dialog is started, if the cursor is positioned inside a chunk in the source document,
 #' then the row corresponding to this chunk will be selected by default.
 #'
-#' @param title Text to place in title bar of gadget.
-#'
 #' @return Returns \code{TRUE} if one or more chunks were removed, \code{FALSE} otherwise.
 #'
 #' @examples
@@ -375,10 +395,17 @@ insert_data_chunk_template = function() {
 #' @family Chunk tools
 #' @author David M. Kaplan \email{dmkaplan2000@@gmail.com}
 #' @encoding UTF-8
-remove_chunks_dialog = function (title="Eliminate (data) chunks") {
-  if (!requireNamespace("shiny",quietly=TRUE) || !requireNamespace("miniUI",quietly=TRUE) ||
-      !requireNamespace("DT",quietly=TRUE) || !requireNamespace("rstudioapi",quietly=TRUE))
-    stop("This function requires that the shiny, miniUI, DT and rstudioapi packages be installed. Please install them before running.")
+remove_chunks_dialog = function () {
+  title="Eliminate (data) chunks"
+
+  # Check for needed packages
+  pkgs = c("shiny","miniUI","DT","rstudioapi")
+  if (!all(sapply(pkgs,requireNamespace,quietly=TRUE)))
+    stop("This function requires that the following packages be installed: ",
+         paste(pkgs,collapse=", "))
+
+  if (!rstudioapi::isAvailable())
+    stop("RStudio does not appear to be running.")
 
   ui <- miniUI::miniPage(
     miniUI::gadgetTitleBar(title,left = miniUI::miniTitleBarCancelButton(),

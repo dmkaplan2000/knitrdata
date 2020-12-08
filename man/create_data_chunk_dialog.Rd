@@ -3,42 +3,58 @@
 \encoding{UTF-8}
 \name{create_data_chunk_dialog}
 \alias{create_data_chunk_dialog}
+\alias{insert_data_chunk_dialog}
 \title{Invoke Shiny gadget to create a data chunk}
 \usage{
-create_data_chunk_dialog(
-  title = "Data chunk creator",
-  infobar = "<big><b>Fill out, then click above to create chunk</b></big>"
-)
+create_data_chunk_dialog(insert.editor.doc = FALSE)
+
+insert_data_chunk_dialog(insert.editor.doc = TRUE)
 }
 \arguments{
-\item{title}{Text to place in title bar of gadget}
-
-\item{infobar}{HTML content to place in information bar at top of gadget}
-}
-\value{
-Invisibly returns the text of the data chunk as a character vector, one line per element.
+\item{insert.editor.doc}{Whether or not to insert output chunk into active
+RStudio editor document at cursor position. Defaults to \code{FALSE}.}
 }
 \description{
-As different elements of the data chunk are specified, other options will be modified
-as is likely to be useful. For example, if a binary file is uploaded, then the \code{format}
-will be set to \code{binary}, the \code{encoding} will be set to \code{base64} and the
-\code{Encode data?} option will be checked. If these options are not appropriate, then they can
+Opens a Shiny dialog allowing the user to specify the content and chunk
+options of a data chunk. As different dialog elements are specified, other
+elements will be modified to suggest likely desired values. For example, if a
+binary file is uploaded, then the \code{format} will be set to \code{binary},
+the \code{encoding} will be set to \code{base64} and the \code{Encode data?}
+option will be checked. If these options are not appropriate, then they can
 be altered afterwards.
 }
 \details{
-When the \code{Create chunk} button is clicked, the function will return the chunk contents
-including header and tail.
+When the \code{Create chunk} button is clicked, the function will return the
+chunk contents including header and tail. If \code{insert.editor.doc==TRUE},
+then the resulting chunk will be inserted into the active document in the
+RStudio editor at the cursor position.
+
+\code{insert_data_chunk_dialog} is a wrapper for
+\code{create_data_chunk_dialog(insert.editor.doc=TRUE)}.
 }
+\section{Functions}{
+\itemize{
+\item \code{create_data_chunk_dialog}: Invisibly returns the text of the data
+chunk as a character vector, one line of text per element.
+
+\item \code{insert_data_chunk_dialog}: Invisibly returns the text of the data
+chunk as a character vector, one line of text per element, if a chunk was
+inserted. Returns \code{NULL} otherwise.
+}}
+
 \examples{
 \dontrun{
 create_data_chunk_dialog()
+}
+
+\dontrun{
+insert_data_chunk_dialog()
 }
 
 }
 \seealso{
 Other Chunk tools: 
 \code{\link{create_chunk}()},
-\code{\link{insert_data_chunk_dialog}()},
 \code{\link{insert_data_chunk_template}()},
 \code{\link{list_rmd_chunks}()},
 \code{\link{remove_chunks_dialog}()}
