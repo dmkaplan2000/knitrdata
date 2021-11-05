@@ -1,3 +1,8 @@
+[![CRAN
+status](https://www.r-pkg.org/badges/version/knitrdata)](https://CRAN.R-project.org/package=knitrdata)
+[![Downloads from the RStudio CRAN
+mirror](https://cranlogs.r-pkg.org/badges/knitrdata)](https://cran.r-project.org/package=knitrdata)
+
 ## Overview
 
 Sometimes it would be useful to make completely standalone Rmarkdown documents that do not depend on data or other information in external files. One important example of this is scientific publications written in Rmarkdown for which we often would like to supply the source document with data to ensure results are reproducible.
