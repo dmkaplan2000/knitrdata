@@ -113,7 +113,7 @@ data_decode = function(data,encoding,as_text=FALSE,options=list()) {
 }
 
 # Helper function to split strings to a fixed size
-str.n.split = function(txt,n) {
+str_n_split = function(txt,n) {
   nc <- nchar(txt)
 
   # the indices where each substr will start
@@ -147,7 +147,7 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
       x = xfun::base64_encode(readBin(con=file,what="raw",n=size))
 
       # Split in appropriate places into multiple lines
-      paste0(str.n.split(x,options$linewidth),options$newline,collapse="")
+      paste0(str_n_split(x,options$linewidth),options$newline,collapse="")
     },
     gpg = {
       if (!requireNamespace("gpg"))
@@ -167,35 +167,67 @@ data_encode = function(file,encoding,options=list(),output=NULL) {
   invisible(data)
 }
 
+# Quarto to Rmarkdown options ------------------------------
+
+coalesce = function(...) {
+  args = list(...)
+  for (a in args) {
+    if (!is.null(a))
+      return(a)
+  }
+  return(NULL)
+}
+
+options_quarto_to_rmarkdown = function(options) {
+  # Map Quarto options to knitrdata Rmarkdown options
+  options$output.var = coalesce(options[["output-var"]],options$output.var)
+  options$output.file = coalesce(options[["output-file"]],options$output.file)
+  options$external.file = coalesce(options[["external-file"]],options$external.file)
+  options$format = coalesce(options$format,options[["data-format"]])
+  options$encoding = coalesce(options$encoding,options[["data-encoding"]])
+  options$decoding.ops = coalesce(options[['decoding-ops']],options$decoding.ops,options[["data-decoding-ops"]])
+  options$loader.function = coalesce(options[["loader-function"]],options$loader.function)
+  options$loader.ops = coalesce(options[["loader-ops"]],options$loader.ops)
+  options$md5sum = coalesce(options$md5sum,options[["data-md5sum"]])
+  options$line.sep = coalesce(options[["line-sep"]],options$line.sep)
+  options$max.echo = coalesce(options[["max-echo"]],options$max.echo)
+
+  return(options)
+}
+
 # Data engine itself -------------------------------------------------
 
 eng_data = function(options) {
+  # Convert Quarto format options to Rmarkdown format options
+  # Store in new variable as the options variable seems to be immutable
+  oo = options_quarto_to_rmarkdown(options)
+
   output = ''
-  code = options$code
+  code = oo$code
 
   # Do nothing if told not to evaluate
-  if (!options$eval)
+  if (!oo$eval)
     return(knitr::engine_output(options,code,output))
 
-  if (is.null(options$output.var) && is.null(options$output.file))
+  if (is.null(oo$output.var) && is.null(oo$output.file))
     stop("One of output.var or output.file must be supplied in data chunk options.")
 
   # Option to include external file
   # Useful to keep initial file size small and readable.
-  if (!is.null(options$external.file)) {
+  if (!is.null(oo$external.file)) {
     if (!is.null(code))
       warning("Non-empty data chunk, but given external.file chunk option. Using external file and ignoring data chunk contents.")
 
-    code = readLines(options$external.file)
+    code = readLines(oo$external.file)
   }
 
-  format = options$format
+  format = oo$format
   if (is.null(format))
     format = 'text'
   if (!is.character(format) || !(format %in% c("text","binary")))
     stop("format must be either 'text' or 'binary'.")
 
-  encoding = options$encoding
+  encoding = oo$encoding
   if (is.null(encoding)) {
     encoding = switch(
       format,
@@ -206,23 +238,23 @@ eng_data = function(options) {
   if (!is.character(encoding) || !(encoding %in% c("asis","base64","gpg")))
     stop("encoding must be one of: 'asis', 'base64', 'gpg'.")
 
-  decoding.ops = options$decoding.ops
+  decoding.ops = oo$decoding.ops
   if (is.null(decoding.ops))
     decoding.ops = list()
   if (!is.list(decoding.ops))
     stop("decoding.ops should be a list. Got object of class ",class(decoding.ops)[1])
 
   if (encoding == "asis") {
-    data = paste0(code,ifelse(is.null(options$line.sep),platform.newline(),options$line.sep),collapse="")
+    data = paste0(code,ifelse(is.null(oo$line.sep),platform.newline(),oo$line.sep),collapse="")
   } else {
     data = data_decode(code,encoding,as_text=(format=="text"),options=decoding.ops)
   }
 
-  output.file = options$output.file
+  output.file = oo$output.file
 
   # Create temp file if using loader function
   if (is.null(output.file) &&
-      (!is.null(options$loader.function) || !is.null(options$md5sum))) {
+      (!is.null(oo$loader.function) || !is.null(oo$md5sum))) {
     output.file = tempfile()
     on.exit(file.remove(output.file))
   }
@@ -235,39 +267,39 @@ eng_data = function(options) {
     )
 
   # Check md5sum if desired
-  if (!is.null(options$md5sum)) {
+  if (!is.null(oo$md5sum)) {
     omd5 = tools::md5sum(output.file)
-    if (options$md5sum != omd5)
-      stop("Given md5sum (= '",options$md5sum,"') does not match md5sum of decoded chunk (= '",omd5,"')")
+    if (oo$md5sum != omd5)
+      stop("Given md5sum (= '",oo$md5sum,"') does not match md5sum of decoded chunk (= '",omd5,"')")
   }
 
   # Apply loader function to data if desired
-  if (!is.null(options$loader.function)) {
-    loader.ops = options$loader.ops
+  if (!is.null(oo$loader.function)) {
+    loader.ops = oo$loader.ops
     if (is.null(loader.ops))
       loader.ops = list()
     if (!is.list(loader.ops))
       stop("loader.ops should be a list. Got object of class ",
            class(loader.ops)[1])
 
-    data = do.call(options$loader.function,
+    data = do.call(oo$loader.function,
                    c(output.file,loader.ops))
   }
 
   # Assign to output.var
-  if (!is.null(options$output.var)) {
-    assign(options$output.var, data, envir = .knitrdata_env())
-    #assign(options$output.var, data, envir = knitr::knit_global())
-    #knitr::assign_knit_global(options$output.var,data) # Solution to avoid CRAN filters that needs to be implemented in knitr
+  if (!is.null(oo$output.var)) {
+    assign(oo$output.var, data, envir = .knitrdata_env())
+    #assign(oo$output.var, data, envir = knitr::knit_global())
+    #knitr::assign_knit_global(oo$output.var,data) # Solution to avoid CRAN filters that needs to be implemented in knitr
   }
 
   # Reduce echo of long data
-  if (is.null(options$max.echo))
-    options$max.echo=20
+  if (is.null(oo$max.echo))
+    oo$max.echo=20
 
-  if (length(code)>options$max.echo)
-    code = c(code[1:options$max.echo],
-             paste0("-- ",length(code)-options$max.echo," more lines of data ommitted --"))
+  if (length(code)>oo$max.echo)
+    code = c(code[1:oo$max.echo],
+             paste0("-- ",length(code)-oo$max.echo," more lines of data ommitted --"))
 
   return(knitr::engine_output(options,code,output))
 }

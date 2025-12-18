@@ -77,13 +77,13 @@ potentially the \code{signer} arguments must be supplied as elements of the
 }
 \section{Functions}{
 \itemize{
-\item \code{data_decode}: Returns decoded data as either a character string
+\item \code{data_decode()}: Returns decoded data as either a character string
 (\code{as_text=TRUE}) or raw vector (\code{as_text=FALSE}).
 
-\item \code{data_encode}: Returns data encoded as a character string using
+\item \code{data_encode()}: Returns data encoded as a character string using
 \code{base64} or \code{gpg} encoding.
-}}
 
+}}
 \examples{
 # Use a temporary directory ----------------------------
 owd = getwd()

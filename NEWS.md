@@ -1,3 +1,9 @@
+knitrdata 0.6.2
+---------------------------------------------------------------------
+
+- Minor changes to address CRAN problems with gpg package and documentation issues.
+- Code to allow Quarto-style option names with dashes instead of periods.
+
 knitrdata 0.6.1
 ---------------------------------------------------------------------
 

@@ -44,17 +44,17 @@ neither is found, then \code{NA_character_} is returned for the line ending.
 }
 \section{Functions}{
 \itemize{
-\item \code{is.file.binary}: A boolean that will be \code{TRUE} if a file is considered to be
+\item \code{is.file.binary()}: A boolean that will be \code{TRUE} if a file is considered to be
 binary.
 
-\item \code{file.type}: Returns a list with up to two elements:
+\item \code{file.type()}: Returns a list with up to two elements:
 \code{type} & \code{newline}. \code{type} can either by \code{"binary"} or
 \code{"text"}. \code{newline} will be \code{NULL} for binary files,
 \code{"\\r\\n"} for DOS formatted text files, \code{"\\n"} for UNIX
 formatted text files and \code{NA_character_} for text files without any
 newline characters in the first \code{nbytes} of the file.
-}}
 
+}}
 \seealso{
 See also \code{\link{platform.newline}}.
 }

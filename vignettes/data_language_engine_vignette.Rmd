@@ -878,3 +878,5 @@ knitr::kable(t,caption="Full list of knitrdata chunk options.")
 ```
 
 `csv`, `csv2` and `rds` chunks support these same options, but `format` and `loader.function` are typically not used and additional arguments to the predefined loader functions can be passed directly as chunk options.
+
+`data` chunks in Quarto documents can use either Rmarkdown (i.e., in the header line) or Quarto (i.e., after the header line preceded by `#|`) chunk options. When options are placed after the chunk header line, periods (`.`) in chunk option names can be replaced by dashes (`-`). For example, `output.var` can be specified as `output-var` in Quarto documents.

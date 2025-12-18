@@ -83,18 +83,18 @@ but they could potentially cause problems in unusual cases.
 }
 \section{Functions}{
 \itemize{
-\item \code{list_rmd_chunks}: Returns a data frame with 4 columns: the chunk
+\item \code{list_rmd_chunks()}: Returns a data frame with 4 columns: the chunk
 type, the chunk label, the line number of the beginning of the chunk and
 the line number of the end of the chunk.
 
-\item \code{split_rmd_by_chunk}: Returns a list with the contents of the Rmarkdown
+\item \code{split_rmd_by_chunk()}: Returns a list with the contents of the Rmarkdown
 document broken into 4 pieces: pre-chunk, chunk header, chunk contents,
 chunk tail, and post-chunk.
 
-\item \code{remove_chunks}: Silently returns a character vector with the contents of
+\item \code{remove_chunks()}: Silently returns a character vector with the contents of
 the Rmd file after having removed the desired chunks
-}}
 
+}}
 \examples{
 # Use a temporary directory ----------------------------
 owd = getwd()
@@ -172,10 +172,6 @@ Other Chunk tools:
 \code{\link{remove_chunks_dialog}()}
 }
 \author{
-David M. Kaplan \email{dmkaplan2000@gmail.com}
-
-David M. Kaplan \email{dmkaplan2000@gmail.com}
-
 David M. Kaplan \email{dmkaplan2000@gmail.com}
 }
 \concept{Chunk tools}

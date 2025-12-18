@@ -34,14 +34,14 @@ RStudio editor at the cursor position.
 }
 \section{Functions}{
 \itemize{
-\item \code{create_data_chunk_dialog}: Invisibly returns the text of the data
+\item \code{create_data_chunk_dialog()}: Invisibly returns the text of the data
 chunk as a character vector, one line of text per element.
 
-\item \code{insert_data_chunk_dialog}: Invisibly returns the text of the data
+\item \code{insert_data_chunk_dialog()}: Invisibly returns the text of the data
 chunk as a character vector, one line of text per element, if a chunk was
 inserted. Returns \code{NULL} otherwise.
-}}
 
+}}
 \examples{
 \dontrun{
 create_data_chunk_dialog()
